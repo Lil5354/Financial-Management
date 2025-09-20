@@ -1,0 +1,750 @@
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/AndroidManifest.xml:8: Warning: READ_EXTERNAL_STORAGE is deprecated (and is not granted) when targeting Android 13+. If you need to query or interact with MediaStore or media files on the shared storage, you should instead use one or more new storage permissions: READ_MEDIA_IMAGES, READ_MEDIA_VIDEO or READ_MEDIA_AUDIO. [ScopedStorage]
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/AndroidManifest.xml:9: Warning: WRITE_EXTERNAL_STORAGE is deprecated (and is not granted) when targeting Android 13+. If you need to write to shared storage, use the MediaStore.createWriteRequest intent. [ScopedStorage]
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "ScopedStorage":
+   Scoped storage is enforced on Android 10+ (or Android 11+ if using
+   requestLegacyExternalStorage). In particular, WRITE_EXTERNAL_STORAGE will
+   no longer provide write access to all files; it will provide the equivalent
+   of READ_EXTERNAL_STORAGE instead.
+
+   As of Android 13, if you need to query or interact with MediaStore or media
+   files on the shared storage, you should be using instead one or more new
+   storage permissions:
+   * android.permission.READ_MEDIA_IMAGES
+   * android.permission.READ_MEDIA_VIDEO
+   * android.permission.READ_MEDIA_AUDIO
+
+   and then add maxSdkVersion="33" to the older permission. See the developer
+   guide for how to do this:
+   https://developer.android.com/about/versions/13/behavior-changes-13#granula
+   r-media-permissions
+
+   The MANAGE_EXTERNAL_STORAGE permission can be used to manage all files, but
+   it is rarely necessary and most apps on Google Play are not allowed to use
+   it. Most apps should instead migrate to use scoped storage. To modify or
+   delete files, apps should request write access from the user as described
+   at https://goo.gle/android-mediastore-createwriterequest.
+
+   To learn more, read these resources: Play policy:
+   https://goo.gle/policy-storage-help Allowable use cases:
+   https://goo.gle/policy-storage-usecases
+
+   https://goo.gle/android-storage-usecases
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:15: Warning: Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details. [OldTargetApi]
+        targetSdk 34
+        ~~~~~~~~~~~~
+
+   Explanation for issues of type "OldTargetApi":
+   When your application or sdk runs on a version of Android that is more
+   recent than your targetSdkVersion specifies that it has been tested with,
+   various compatibility modes kick in. This ensures that your application
+   continues to work, but it may look out of place. For example, if the
+   targetSdkVersion is less than 14, your app may get an option button in the
+   UI.
+
+   To fix this issue, set the targetSdkVersion to the highest available value.
+   Then test your app to make sure everything works correctly. You may want to
+   consult the compatibility notes to see what changes apply to each version
+   you are adding support for:
+   https://developer.android.com/reference/android/os/Build.VERSION_CODES.html
+   as well as follow this guide:
+   https://developer.android.com/distribute/best-practices/develop/target-sdk.
+   html
+
+   https://developer.android.com/distribute/best-practices/develop/target-sdk.html
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/java/com/example/expensetracker/ui/splash/SplashActivity.java:21: Warning: The application should not provide its own launch screen [CustomSplashScreen]
+public class SplashActivity extends AppCompatActivity {
+             ~~~~~~~~~~~~~~
+
+   Explanation for issues of type "CustomSplashScreen":
+   Starting in Android 12 (API 31+), the application's Launch Screen is
+   provided by the system and the application should not create its own,
+   otherwise the user will see two splashscreens. Please check the
+   SplashScreen class to check how the Splash Screen can be controlled and
+   customized.
+
+   https://developer.android.com/guide/topics/ui/splash-screen
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/gradle/wrapper/gradle-wrapper.properties:3: Warning: A newer version of Gradle than 8.13 is available: 8.14.3 [AndroidGradlePluginVersion]
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "AndroidGradlePluginVersion":
+   This detector looks for usage of the Android Gradle Plugin where the
+   version you are using is not the current stable release. Using older
+   versions is fine, and there are cases where you deliberately want to stick
+   with an older version. However, you may simply not be aware that a more
+   recent version is available, and that is what this lint check helps find.
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:10: Warning: A newer version of compileSdkVersion than 34 is available: 36 [GradleDependency]
+    compileSdk 34
+    ~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:55: Warning: A newer version of androidx.core:core-ktx than 1.12.0 is available: 1.17.0 [GradleDependency]
+    implementation 'androidx.core:core-ktx:1.12.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:56: Warning: A newer version of androidx.appcompat:appcompat than 1.6.1 is available: 1.7.1 [GradleDependency]
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:57: Warning: A newer version of com.google.android.material:material than 1.11.0 is available: 1.13.0 [GradleDependency]
+    implementation 'com.google.android.material:material:1.11.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:58: Warning: A newer version of androidx.constraintlayout:constraintlayout than 2.1.4 is available: 2.2.1 [GradleDependency]
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:61: Warning: A newer version of androidx.compose.ui:ui than 1.5.4 is available: 1.9.1 [GradleDependency]
+    implementation 'androidx.compose.ui:ui:1.5.4'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:62: Warning: A newer version of androidx.compose.ui:ui-tooling-preview than 1.5.4 is available: 1.9.1 [GradleDependency]
+    implementation 'androidx.compose.ui:ui-tooling-preview:1.5.4'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:63: Warning: A newer version of androidx.compose.material3:material3 than 1.1.2 is available: 1.3.2 [GradleDependency]
+    implementation 'androidx.compose.material3:material3:1.1.2'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:64: Warning: A newer version of androidx.compose.material:material-icons-extended than 1.5.4 is available: 1.7.8 [GradleDependency]
+    implementation 'androidx.compose.material:material-icons-extended:1.5.4'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:65: Warning: A newer version of androidx.activity:activity-compose than 1.8.2 is available: 1.11.0 [GradleDependency]
+    implementation 'androidx.activity:activity-compose:1.8.2'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:66: Warning: A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.7.0 is available: 2.9.3 [GradleDependency]
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:67: Warning: A newer version of androidx.navigation:navigation-compose than 2.7.6 is available: 2.9.4 [GradleDependency]
+    implementation 'androidx.navigation:navigation-compose:2.7.6'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:68: Warning: A newer version of androidx.hilt:hilt-navigation-compose than 1.1.0 is available: 1.3.0 [GradleDependency]
+    implementation 'androidx.hilt:hilt-navigation-compose:1.1.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:71: Warning: A newer version of androidx.navigation:navigation-fragment-ktx than 2.7.6 is available: 2.9.4 [GradleDependency]
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.6'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:72: Warning: A newer version of androidx.navigation:navigation-ui-ktx than 2.7.6 is available: 2.9.4 [GradleDependency]
+    implementation 'androidx.navigation:navigation-ui-ktx:2.7.6'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:75: Warning: A newer version of androidx.lifecycle:lifecycle-viewmodel-ktx than 2.7.0 is available: 2.9.3 [GradleDependency]
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:76: Warning: A newer version of androidx.lifecycle:lifecycle-livedata-ktx than 2.7.0 is available: 2.9.3 [GradleDependency]
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:77: Warning: A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.7.0 is available: 2.9.3 [GradleDependency]
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:80: Warning: A newer version of androidx.room:room-runtime than 2.6.1 is available: 2.8.0 [GradleDependency]
+    implementation 'androidx.room:room-runtime:2.6.1'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:81: Warning: A newer version of androidx.room:room-ktx than 2.6.1 is available: 2.8.0 [GradleDependency]
+    implementation 'androidx.room:room-ktx:2.6.1'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:82: Warning: A newer version of androidx.room:room-compiler than 2.6.1 is available: 2.8.0 [GradleDependency]
+    ksp 'androidx.room:room-compiler:2.6.1'
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:89: Warning: A newer version of androidx.recyclerview:recyclerview than 1.3.2 is available: 1.4.0 [GradleDependency]
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:90: Warning: A newer version of androidx.fragment:fragment-ktx than 1.6.2 is available: 1.8.9 [GradleDependency]
+    implementation 'androidx.fragment:fragment-ktx:1.6.2'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:95: Warning: A newer version of com.google.firebase:firebase-bom than 32.7.0 is available: 34.2.0 [GradleDependency]
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:105: Warning: A newer version of com.google.mlkit:image-labeling than 17.0.8 is available: 17.0.9 [GradleDependency]
+    implementation 'com.google.mlkit:image-labeling:17.0.8'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:120: Warning: A newer version of androidx.room:room-rxjava3 than 2.6.1 is available: 2.8.0 [GradleDependency]
+    implementation 'androidx.room:room-rxjava3:2.6.1'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:139: Warning: A newer version of androidx.test.ext:junit than 1.1.5 is available: 1.3.0 [GradleDependency]
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:140: Warning: A newer version of androidx.test.espresso:espresso-core than 3.5.1 is available: 3.7.0 [GradleDependency]
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:141: Warning: A newer version of androidx.compose.ui:ui-test-junit4 than 1.5.4 is available: 1.9.1 [GradleDependency]
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4:1.5.4'
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:142: Warning: A newer version of androidx.compose.ui:ui-tooling than 1.5.4 is available: 1.9.1 [GradleDependency]
+    debugImplementation 'androidx.compose.ui:ui-tooling:1.5.4'
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:143: Warning: A newer version of androidx.compose.ui:ui-test-manifest than 1.5.4 is available: 1.9.1 [GradleDependency]
+    debugImplementation 'androidx.compose.ui:ui-test-manifest:1.5.4'
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "GradleDependency":
+   This detector looks for usages of libraries where the version you are using
+   is not the current stable release. Using older versions is fine, and there
+   are cases where you deliberately want to stick with an older version.
+   However, you may simply not be aware that a more recent version is
+   available, and that is what this lint check helps find.
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:85: Warning: A newer version of com.google.dagger:hilt-android than 2.48 is available: 2.57.1 [NewerVersionAvailable]
+    implementation 'com.google.dagger:hilt-android:2.48'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:86: Warning: A newer version of com.google.dagger:hilt-compiler than 2.48 is available: 2.57.1 [NewerVersionAvailable]
+    ksp 'com.google.dagger:hilt-compiler:2.48'
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:111: Warning: A newer version of com.github.bumptech.glide:glide than 4.16.0 is available: 5.0.5 [NewerVersionAvailable]
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:114: Warning: A newer version of com.airbnb.android:lottie than 6.4.0 is available: 6.6.7 [NewerVersionAvailable]
+    implementation 'com.airbnb.android:lottie:6.4.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:118: Warning: A newer version of io.reactivex.rxjava3:rxjava than 3.1.8 is available: 3.1.11 [NewerVersionAvailable]
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.8'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:123: Warning: A newer version of com.squareup.retrofit2:retrofit than 2.9.0 is available: 3.0.0 [NewerVersionAvailable]
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:124: Warning: A newer version of com.squareup.retrofit2:converter-gson than 2.9.0 is available: 3.0.0 [NewerVersionAvailable]
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:125: Warning: A newer version of com.squareup.okhttp3:logging-interceptor than 4.11.0 is available: 5.1.0 [NewerVersionAvailable]
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.11.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:126: Warning: A newer version of com.squareup.okhttp3:okhttp than 4.11.0 is available: 5.1.0 [NewerVersionAvailable]
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:129: Warning: A newer version of org.jetbrains.kotlinx:kotlinx-serialization-json than 1.5.1 is available: 1.9.0 [NewerVersionAvailable]
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:132: Warning: A newer version of org.jetbrains.kotlinx:kotlinx-datetime than 0.4.1 is available: 0.7.1 [NewerVersionAvailable]
+    implementation 'org.jetbrains.kotlinx:kotlinx-datetime:0.4.1'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/build.gradle:135: Warning: A newer version of com.guolindev.permissionx:permissionx than 1.7.1 is available: 1.8.1 [NewerVersionAvailable]
+    implementation 'com.guolindev.permissionx:permissionx:1.7.1'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "NewerVersionAvailable":
+   This detector checks with a central repository to see if there are newer
+   versions available for the dependencies used by this project. This is
+   similar to the GradleDependency check, which checks for newer versions
+   available in the Android SDK tools and libraries, but this works with any
+   MavenCentral dependency, and connects to the library every time, which
+   makes it more flexible but also much slower.
+
+/Users/mac/.gradle/caches/8.13/transforms/6749fa39ce027177f3ea7413fdb28050/transformed/vision-internal-vkp-18.2.2/jni/arm64-v8a/libmlkitcommonpipeline.so: Warning: The native library arm64-v8a/libmlkitcommonpipeline.so (from com.google.mlkit:vision-internal-vkp:18.2.2) is not 16 KB aligned [Aligned16KB]
+/Users/mac/.gradle/caches/8.13/transforms/6749fa39ce027177f3ea7413fdb28050/transformed/vision-internal-vkp-18.2.2/jni/arm64-v8a/libmlkitcommonpipeline.so: Warning: The native library arm64-v8a/libmlkitcommonpipeline.so (from com.google.mlkit:vision-internal-vkp:18.2.2) is not 16 KB aligned [Aligned16KB]
+/Users/mac/.gradle/caches/8.13/transforms/6749fa39ce027177f3ea7413fdb28050/transformed/vision-internal-vkp-18.2.2/jni/arm64-v8a/libmlkitcommonpipeline.so: Warning: The native library arm64-v8a/libmlkitcommonpipeline.so (from com.google.mlkit:vision-internal-vkp:18.2.2) is not 16 KB aligned [Aligned16KB]
+
+   Explanation for issues of type "Aligned16KB":
+   Android has traditionally used 4 KB memory page sizes. However, to support
+   future devices that only work with 16 KB aligned libraries apps containing
+   native libraries need to be built with 16 KB alignment.
+
+   Apps with 4 KB aligned native libraries may not work correctly on devices
+   requiring 16 KB alignment. To ensure compatibility and future-proof your
+   app, it is strongly recommended that your native libraries are aligned to
+   16 KB boundaries.
+
+   If your app uses any NDK libraries, directly or indirectly through an SDK,
+   you should rebuild your app to meet this recommendation. Make sure all
+   native libraries within your application, including those from
+   dependencies, are built with 16 KB page alignment.
+
+   This lint check looks at all native libraries that your app depends on. If
+   any are found to be aligned to 4 KB instead of 16 KB, you will need to
+   address this.
+
+   When a library is flagged, first try to update to a newer version that
+   supports 16 KB alignment. If an updated version is not available, contact
+   the library vendor to ask about their plans for 16 KB support and request a
+   compatible version. Updating your libraries proactively will help ensure
+   your app works properly on a wider range of devices.
+
+   https://developer.android.com/guide/practices/page-sizes
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:14: Warning: Unnecessary; SDK_INT is always >= 21 [ObsoleteSdkInt]
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+                                            ~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "ObsoleteSdkInt":
+   This check flags version checks that are not necessary, because the
+   minSdkVersion (or surrounding known API level) is already at least as high
+   as the version checked for.
+
+   Similarly, it also looks for resources in -vNN folders, such as values-v14
+   where the version qualifier is less than or equal to the minSdkVersion,
+   where the contents should be merged into the best folder.
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:11: Warning: The resource R.color.secondary_light appears to be unused [UnusedResources]
+    <color name="secondary_light">#FFE0B2</color>
+           ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:15: Warning: The resource R.color.surface_color appears to be unused [UnusedResources]
+    <color name="surface_color">#FFFFFF</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:16: Warning: The resource R.color.card_background appears to be unused [UnusedResources]
+    <color name="card_background">#FFFFFF</color>
+           ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:19: Warning: The resource R.color.text_primary appears to be unused [UnusedResources]
+    <color name="text_primary">#212121</color>
+           ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:20: Warning: The resource R.color.text_secondary appears to be unused [UnusedResources]
+    <color name="text_secondary">#757575</color>
+           ~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:21: Warning: The resource R.color.text_hint appears to be unused [UnusedResources]
+    <color name="text_hint">#BDBDBD</color>
+           ~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:22: Warning: The resource R.color.text_on_primary appears to be unused [UnusedResources]
+    <color name="text_on_primary">#FFFFFF</color>
+           ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:27: Warning: The resource R.color.transparent appears to be unused [UnusedResources]
+    <color name="transparent">#00000000</color>
+           ~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:30: Warning: The resource R.color.success_color appears to be unused [UnusedResources]
+    <color name="success_color">#4CAF50</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:31: Warning: The resource R.color.error_color appears to be unused [UnusedResources]
+    <color name="error_color">#F44336</color>
+           ~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:32: Warning: The resource R.color.warning_color appears to be unused [UnusedResources]
+    <color name="warning_color">#FF9800</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:33: Warning: The resource R.color.info_color appears to be unused [UnusedResources]
+    <color name="info_color">#2196F3</color>
+           ~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:36: Warning: The resource R.color.category_food appears to be unused [UnusedResources]
+    <color name="category_food">#FF5722</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:37: Warning: The resource R.color.category_transport appears to be unused [UnusedResources]
+    <color name="category_transport">#3F51B5</color>
+           ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:38: Warning: The resource R.color.category_shopping appears to be unused [UnusedResources]
+    <color name="category_shopping">#E91E63</color>
+           ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:39: Warning: The resource R.color.category_entertainment appears to be unused [UnusedResources]
+    <color name="category_entertainment">#9C27B0</color>
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:40: Warning: The resource R.color.category_health appears to be unused [UnusedResources]
+    <color name="category_health">#4CAF50</color>
+           ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:41: Warning: The resource R.color.category_education appears to be unused [UnusedResources]
+    <color name="category_education">#FF9800</color>
+           ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:42: Warning: The resource R.color.category_other appears to be unused [UnusedResources]
+    <color name="category_other">#607D8B</color>
+           ~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:45: Warning: The resource R.color.bottom_nav_color appears to be unused [UnusedResources]
+    <color name="bottom_nav_color">#4CAF50</color>
+           ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:46: Warning: The resource R.color.bottom_nav_selected appears to be unused [UnusedResources]
+    <color name="bottom_nav_selected">#4CAF50</color>
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:47: Warning: The resource R.color.bottom_nav_unselected appears to be unused [UnusedResources]
+    <color name="bottom_nav_unselected">#757575</color>
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:54: Warning: The resource R.color.chart_color_1 appears to be unused [UnusedResources]
+    <color name="chart_color_1">#4CAF50</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:55: Warning: The resource R.color.chart_color_2 appears to be unused [UnusedResources]
+    <color name="chart_color_2">#8BC34A</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:56: Warning: The resource R.color.chart_color_3 appears to be unused [UnusedResources]
+    <color name="chart_color_3">#CDDC39</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:57: Warning: The resource R.color.chart_color_4 appears to be unused [UnusedResources]
+    <color name="chart_color_4">#FF9800</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:58: Warning: The resource R.color.chart_color_5 appears to be unused [UnusedResources]
+    <color name="chart_color_5">#FF5722</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:59: Warning: The resource R.color.chart_color_6 appears to be unused [UnusedResources]
+    <color name="chart_color_6">#9C27B0</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:60: Warning: The resource R.color.chart_color_7 appears to be unused [UnusedResources]
+    <color name="chart_color_7">#607D8B</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:63: Warning: The resource R.color.divider_color appears to be unused [UnusedResources]
+    <color name="divider_color">#E0E0E0</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:66: Warning: The resource R.color.overlay_dark appears to be unused [UnusedResources]
+    <color name="overlay_dark">#80000000</color>
+           ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/colors.xml:67: Warning: The resource R.color.overlay_light appears to be unused [UnusedResources]
+    <color name="overlay_light">#80FFFFFF</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:9: Warning: The resource R.string.nav_home appears to be unused [UnusedResources]
+    <string name="nav_home">Trang chủ</string>
+            ~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:10: Warning: The resource R.string.nav_expenses appears to be unused [UnusedResources]
+    <string name="nav_expenses">Chi tiêu</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:11: Warning: The resource R.string.nav_reports appears to be unused [UnusedResources]
+    <string name="nav_reports">Báo cáo</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:12: Warning: The resource R.string.nav_settings appears to be unused [UnusedResources]
+    <string name="nav_settings">Cài đặt</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:15: Warning: The resource R.string.home_welcome appears to be unused [UnusedResources]
+    <string name="home_welcome">Chào mừng!</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:16: Warning: The resource R.string.home_total_expense appears to be unused [UnusedResources]
+    <string name="home_total_expense">Tổng chi tiêu tháng này</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:17: Warning: The resource R.string.home_recent_expenses appears to be unused [UnusedResources]
+    <string name="home_recent_expenses">Chi tiêu gần đây</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:18: Warning: The resource R.string.home_add_expense appears to be unused [UnusedResources]
+    <string name="home_add_expense">Thêm chi tiêu</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:19: Warning: The resource R.string.home_view_all appears to be unused [UnusedResources]
+    <string name="home_view_all">Xem tất cả</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:22: Warning: The resource R.string.expense_title appears to be unused [UnusedResources]
+    <string name="expense_title">Tiêu đề</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:23: Warning: The resource R.string.expense_amount appears to be unused [UnusedResources]
+    <string name="expense_amount">Số tiền</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:24: Warning: The resource R.string.expense_category appears to be unused [UnusedResources]
+    <string name="expense_category">Danh mục</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:25: Warning: The resource R.string.expense_date appears to be unused [UnusedResources]
+    <string name="expense_date">Ngày</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:26: Warning: The resource R.string.expense_note appears to be unused [UnusedResources]
+    <string name="expense_note">Ghi chú</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:27: Warning: The resource R.string.expense_image appears to be unused [UnusedResources]
+    <string name="expense_image">Hình ảnh</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:29: Warning: The resource R.string.add_expense appears to be unused [UnusedResources]
+    <string name="add_expense">Thêm chi tiêu</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:30: Warning: The resource R.string.edit_expense appears to be unused [UnusedResources]
+    <string name="edit_expense">Sửa chi tiêu</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:31: Warning: The resource R.string.delete_expense appears to be unused [UnusedResources]
+    <string name="delete_expense">Xóa chi tiêu</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:32: Warning: The resource R.string.save appears to be unused [UnusedResources]
+    <string name="save">Lưu</string>
+            ~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:33: Warning: The resource R.string.cancel appears to be unused [UnusedResources]
+    <string name="cancel">Hủy</string>
+            ~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:34: Warning: The resource R.string.delete appears to be unused [UnusedResources]
+    <string name="delete">Xóa</string>
+            ~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:35: Warning: The resource R.string.edit appears to be unused [UnusedResources]
+    <string name="edit">Sửa</string>
+            ~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:38: Warning: The resource R.string.category_food appears to be unused [UnusedResources]
+    <string name="category_food">Ăn uống</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:39: Warning: The resource R.string.category_transport appears to be unused [UnusedResources]
+    <string name="category_transport">Đi lại</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:40: Warning: The resource R.string.category_shopping appears to be unused [UnusedResources]
+    <string name="category_shopping">Mua sắm</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:41: Warning: The resource R.string.category_entertainment appears to be unused [UnusedResources]
+    <string name="category_entertainment">Giải trí</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:42: Warning: The resource R.string.category_health appears to be unused [UnusedResources]
+    <string name="category_health">Sức khỏe</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:43: Warning: The resource R.string.category_education appears to be unused [UnusedResources]
+    <string name="category_education">Giáo dục</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:44: Warning: The resource R.string.category_other appears to be unused [UnusedResources]
+    <string name="category_other">Khác</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:47: Warning: The resource R.string.reports_title appears to be unused [UnusedResources]
+    <string name="reports_title">Báo cáo chi tiêu</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:48: Warning: The resource R.string.reports_daily appears to be unused [UnusedResources]
+    <string name="reports_daily">Hàng ngày</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:49: Warning: The resource R.string.reports_weekly appears to be unused [UnusedResources]
+    <string name="reports_weekly">Hàng tuần</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:50: Warning: The resource R.string.reports_monthly appears to be unused [UnusedResources]
+    <string name="reports_monthly">Hàng tháng</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:51: Warning: The resource R.string.reports_yearly appears to be unused [UnusedResources]
+    <string name="reports_yearly">Hàng năm</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:52: Warning: The resource R.string.reports_total appears to be unused [UnusedResources]
+    <string name="reports_total">Tổng cộng</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:53: Warning: The resource R.string.reports_average appears to be unused [UnusedResources]
+    <string name="reports_average">Trung bình</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:54: Warning: The resource R.string.reports_forecast appears to be unused [UnusedResources]
+    <string name="reports_forecast">Dự đoán</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:57: Warning: The resource R.string.settings_title appears to be unused [UnusedResources]
+    <string name="settings_title">Cài đặt</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:58: Warning: The resource R.string.settings_notifications appears to be unused [UnusedResources]
+    <string name="settings_notifications">Thông báo</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:59: Warning: The resource R.string.settings_backup appears to be unused [UnusedResources]
+    <string name="settings_backup">Sao lưu dữ liệu</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:60: Warning: The resource R.string.settings_sync appears to be unused [UnusedResources]
+    <string name="settings_sync">Đồng bộ Firebase</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:61: Warning: The resource R.string.settings_categories appears to be unused [UnusedResources]
+    <string name="settings_categories">Quản lý danh mục</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:62: Warning: The resource R.string.settings_about appears to be unused [UnusedResources]
+    <string name="settings_about">Giới thiệu</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:65: Warning: The resource R.string.notification_reminder_title appears to be unused [UnusedResources]
+    <string name="notification_reminder_title">Nhắc nhở nhập chi tiêu</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:66: Warning: The resource R.string.notification_reminder_body appears to be unused [UnusedResources]
+    <string name="notification_reminder_body">Đừng quên ghi lại chi tiêu hôm nay!</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:69: Warning: The resource R.string.ai_ocr_title appears to be unused [UnusedResources]
+    <string name="ai_ocr_title">Quét hóa đơn</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:70: Warning: The resource R.string.ai_ocr_description appears to be unused [UnusedResources]
+    <string name="ai_ocr_description">Chụp ảnh hóa đơn để tự động điền thông tin</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:71: Warning: The resource R.string.ai_auto_category appears to be unused [UnusedResources]
+    <string name="ai_auto_category">Tự động phân loại</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:72: Warning: The resource R.string.ai_forecast appears to be unused [UnusedResources]
+    <string name="ai_forecast">Dự đoán chi tiêu</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:75: Warning: The resource R.string.message_success appears to be unused [UnusedResources]
+    <string name="message_success">Thành công!</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:76: Warning: The resource R.string.message_error appears to be unused [UnusedResources]
+    <string name="message_error">Có lỗi xảy ra</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:77: Warning: The resource R.string.message_loading appears to be unused [UnusedResources]
+    <string name="message_loading">Đang tải...</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:78: Warning: The resource R.string.message_no_data appears to be unused [UnusedResources]
+    <string name="message_no_data">Không có dữ liệu</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:79: Warning: The resource R.string.message_confirm_delete appears to be unused [UnusedResources]
+    <string name="message_confirm_delete">Bạn có chắc muốn xóa chi tiêu này?</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:82: Warning: The resource R.string.validation_title_required appears to be unused [UnusedResources]
+    <string name="validation_title_required">Vui lòng nhập tiêu đề</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:83: Warning: The resource R.string.validation_amount_required appears to be unused [UnusedResources]
+    <string name="validation_amount_required">Vui lòng nhập số tiền</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:84: Warning: The resource R.string.validation_amount_invalid appears to be unused [UnusedResources]
+    <string name="validation_amount_invalid">Số tiền không hợp lệ</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:85: Warning: The resource R.string.validation_category_required appears to be unused [UnusedResources]
+    <string name="validation_category_required">Vui lòng chọn danh mục</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:88: Warning: The resource R.string.currency_symbol appears to be unused [UnusedResources]
+    <string name="currency_symbol">₫</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:89: Warning: The resource R.string.currency_format appears to be unused [UnusedResources]
+    <string name="currency_format">%,.0f ₫</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:92: Warning: The resource R.string.date_format appears to be unused [UnusedResources]
+    <string name="date_format">dd/MM/yyyy</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:93: Warning: The resource R.string.date_time_format appears to be unused [UnusedResources]
+    <string name="date_time_format">dd/MM/yyyy HH:mm</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:96: Warning: The resource R.string.empty_expenses appears to be unused [UnusedResources]
+    <string name="empty_expenses">Chưa có chi tiêu nào</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:97: Warning: The resource R.string.empty_expenses_description appears to be unused [UnusedResources]
+    <string name="empty_expenses_description">Hãy thêm chi tiêu đầu tiên của bạn</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:98: Warning: The resource R.string.empty_categories appears to be unused [UnusedResources]
+    <string name="empty_categories">Chưa có danh mục nào</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:99: Warning: The resource R.string.empty_reports appears to be unused [UnusedResources]
+    <string name="empty_reports">Chưa có báo cáo nào</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:102: Warning: The resource R.string.action_take_photo appears to be unused [UnusedResources]
+    <string name="action_take_photo">Chụp ảnh</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:103: Warning: The resource R.string.action_choose_photo appears to be unused [UnusedResources]
+    <string name="action_choose_photo">Chọn ảnh</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:104: Warning: The resource R.string.action_remove_photo appears to be unused [UnusedResources]
+    <string name="action_remove_photo">Xóa ảnh</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:105: Warning: The resource R.string.action_retry appears to be unused [UnusedResources]
+    <string name="action_retry">Thử lại</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:106: Warning: The resource R.string.action_refresh appears to be unused [UnusedResources]
+    <string name="action_refresh">Làm mới</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:107: Warning: The resource R.string.action_share appears to be unused [UnusedResources]
+    <string name="action_share">Chia sẻ</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:108: Warning: The resource R.string.action_export appears to be unused [UnusedResources]
+    <string name="action_export">Xuất dữ liệu</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:111: Warning: The resource R.string.permission_camera_title appears to be unused [UnusedResources]
+    <string name="permission_camera_title">Quyền truy cập camera</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:112: Warning: The resource R.string.permission_camera_message appears to be unused [UnusedResources]
+    <string name="permission_camera_message">Ứng dụng cần quyền truy cập camera để chụp ảnh hóa đơn</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:113: Warning: The resource R.string.permission_storage_title appears to be unused [UnusedResources]
+    <string name="permission_storage_title">Quyền truy cập bộ nhớ</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:114: Warning: The resource R.string.permission_storage_message appears to be unused [UnusedResources]
+    <string name="permission_storage_message">Ứng dụng cần quyền truy cập bộ nhớ để lưu ảnh</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:117: Warning: The resource R.string.firebase_sync_success appears to be unused [UnusedResources]
+    <string name="firebase_sync_success">Đồng bộ thành công</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:118: Warning: The resource R.string.firebase_sync_error appears to be unused [UnusedResources]
+    <string name="firebase_sync_error">Lỗi đồng bộ</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:119: Warning: The resource R.string.firebase_backup_success appears to be unused [UnusedResources]
+    <string name="firebase_backup_success">Sao lưu thành công</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:120: Warning: The resource R.string.firebase_restore_success appears to be unused [UnusedResources]
+    <string name="firebase_restore_success">Khôi phục thành công</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:28: Warning: The resource R.style.ButtonPrimary appears to be unused [UnusedResources]
+    <style name="ButtonPrimary" parent="Widget.Material3.Button">
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:36: Warning: The resource R.style.ButtonSecondary appears to be unused [UnusedResources]
+    <style name="ButtonSecondary" parent="Widget.Material3.Button.OutlinedButton">
+           ~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:44: Warning: The resource R.style.CardStyle appears to be unused [UnusedResources]
+    <style name="CardStyle" parent="Widget.Material3.CardView.Elevated">
+           ~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:51: Warning: The resource R.style.TextTitle appears to be unused [UnusedResources]
+    <style name="TextTitle" parent="Widget.AppCompat.TextView">
+           ~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:57: Warning: The resource R.style.TextSubtitle appears to be unused [UnusedResources]
+    <style name="TextSubtitle" parent="Widget.AppCompat.TextView">
+           ~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:63: Warning: The resource R.style.TextBody appears to be unused [UnusedResources]
+    <style name="TextBody" parent="Widget.AppCompat.TextView">
+           ~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:68: Warning: The resource R.style.TextCaption appears to be unused [UnusedResources]
+    <style name="TextCaption" parent="Widget.AppCompat.TextView">
+           ~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:74: Warning: The resource R.style.InputStyle appears to be unused [UnusedResources]
+    <style name="InputStyle" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+           ~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:84: Warning: The resource R.style.FABStyle appears to be unused [UnusedResources]
+    <style name="FABStyle" parent="Widget.Material3.FloatingActionButton.Primary">
+           ~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:91: Warning: The resource R.style.AppBarStyle appears to be unused [UnusedResources]
+    <style name="AppBarStyle" parent="Widget.Material3.Toolbar">
+           ~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/themes.xml:98: Warning: The resource R.style.BottomNavStyle appears to be unused [UnusedResources]
+    <style name="BottomNavStyle" parent="Widget.Material3.BottomNavigationView">
+           ~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UnusedResources":
+   Unused resources make applications larger and slow down builds.
+
+
+   The unused resource check can ignore tests. If you want to include
+   resources that are only referenced from tests, consider packaging them in a
+   test source set instead.
+
+   You can include test sources in the unused resource check by setting the
+   system property lint.unused-resources.include-tests =true, and to exclude
+   them (usually for performance reasons), use
+   lint.unused-resources.exclude-tests =true.
+   ,
+
+   Available options:
+
+   **skip-libraries** (default is true):
+   Whether the unused resource check should skip reporting unused resources in libraries.
+
+   Many libraries will declare resources that are part of the library surface; other modules depending on the library will also reference the resources. To avoid reporting all these resources as unused (in the context of a library), the unused resource check normally skips reporting unused resources in libraries. Instead, run the unused resource check on the consuming app module (along with `checkDependencies=true`).
+
+   However, there are cases where you want to check that all the resources declared in a library are used; in that case, you can disable the skip option.
+
+   To configure this option, use a `lint.xml` file with an <option> like this:
+
+   ```xml
+   <lint>
+       <issue id="UnusedResources">
+           <option name="skip-libraries" value="true" />
+       </issue>
+   </lint>
+   ```
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:6: Warning: Replace "..." with ellipsis character (…, &#8230;) ? [TypographyEllipsis]
+    <string name="splash_loading">Đang tải...</string>
+                                  ~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/values/strings.xml:77: Warning: Replace "..." with ellipsis character (…, &#8230;) ? [TypographyEllipsis]
+    <string name="message_loading">Đang tải...</string>
+                                   ~~~~~~~~~~~
+
+   Explanation for issues of type "TypographyEllipsis":
+   You can replace the string "..." with a dedicated ellipsis character,
+   ellipsis character (u2026, &#8230;). This can help make the text more
+   readable.
+
+   https://en.wikipedia.org/wiki/Ellipsis
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/mipmap-hdpi/ic_launcher_round.png: Warning: Launcher icon used as round icon did not have a circular shape [IconLauncherShape]
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/mipmap-mdpi/ic_launcher_round.png: Warning: Launcher icon used as round icon did not have a circular shape [IconLauncherShape]
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png: Warning: Launcher icon used as round icon did not have a circular shape [IconLauncherShape]
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png: Warning: Launcher icon used as round icon did not have a circular shape [IconLauncherShape]
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png: Warning: Launcher icon used as round icon did not have a circular shape [IconLauncherShape]
+
+   Explanation for issues of type "IconLauncherShape":
+   According to the Android Design Guide
+   (https://d.android.com/r/studio-ui/designer/material/iconography) your
+   launcher icons should "use a distinct silhouette", a "three-dimensional,
+   front view, with a slight perspective as if viewed from above, so that
+   users perceive some depth."
+
+   The unique silhouette implies that your launcher icon should not be a
+   filled square.
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png: Warning: The image ic_launcher.png varies significantly in its density-independent (dip) size across the various density versions: mipmap-hdpi/ic_launcher.png: 341x341 dp (512x512 px), mipmap-mdpi/ic_launcher.png: 512x512 dp (512x512 px), mipmap-xhdpi/ic_launcher.png: 256x256 dp (512x512 px), mipmap-xxhdpi/ic_launcher.png: 171x171 dp (512x512 px), mipmap-xxxhdpi/ic_launcher.png: 128x128 dp (512x512 px) [IconDipSize]
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png: Warning: The image ic_launcher_round.png varies significantly in its density-independent (dip) size across the various density versions: mipmap-hdpi/ic_launcher_round.png: 341x341 dp (512x512 px), mipmap-mdpi/ic_launcher_round.png: 512x512 dp (512x512 px), mipmap-xhdpi/ic_launcher_round.png: 256x256 dp (512x512 px), mipmap-xxhdpi/ic_launcher_round.png: 171x171 dp (512x512 px), mipmap-xxxhdpi/ic_launcher_round.png: 128x128 dp (512x512 px) [IconDipSize]
+
+   Explanation for issues of type "IconDipSize":
+   Checks the all icons which are provided in multiple densities, all compute
+   to roughly the same density-independent pixel (dip) size. This catches
+   errors where images are either placed in the wrong folder, or icons are
+   changed to new sizes but some folders are forgotten.
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png: Warning: The following unrelated icon files have identical contents: ic_launcher.png, ic_launcher_round.png, ic_launcher.png, ic_launcher_round.png, ic_launcher.png, ic_launcher_round.png, ic_launcher.png, ic_launcher_round.png, ic_launcher.png, ic_launcher_round.png [IconDuplicates]
+
+   Explanation for issues of type "IconDuplicates":
+   If an icon is repeated under different names, you can consolidate and just
+   use one of the icons and delete the others to make your application
+   smaller. However, duplicated icons usually are not intentional and can
+   sometimes point to icons that were accidentally overwritten or accidentally
+   not updated.
+
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/layout/activity_splash.xml:42: Warning: Hardcoded string "Quản lý chi tiêu thông minh", should use @string resource [HardcodedText]
+            android:text="Quản lý chi tiêu thông minh"
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/mac/Desktop/Quản lý chi tiêu cá nhân/app/src/main/res/layout/activity_splash.xml:88: Warning: Hardcoded string "v1.0.0", should use @string resource [HardcodedText]
+        android:text="v1.0.0"
+        ~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "HardcodedText":
+   Hardcoding text attributes directly in layout files is bad for several
+   reasons:
+
+   * When creating configuration variations (for example for landscape or
+   portrait) you have to repeat the actual text (and keep it up to date when
+   making changes)
+
+   * The application cannot be translated to other languages by just adding
+   new translations for existing string resources.
+
+   There are quickfixes to automatically extract this hardcoded string into a
+   resource lookup.
+
+0 errors, 188 warnings

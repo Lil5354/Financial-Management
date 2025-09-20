@@ -1,0 +1,110 @@
+[
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/anim_tagline_animation.xml.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/anim/tagline_animation.xml"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/mipmap-xxxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/mipmap-hdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/mipmap-xhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/drawable_splash_background.xml.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/drawable/splash_background.xml"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/mipmap-xxhdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/drawable_logo_app.png.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/drawable/logo_app.png"
+    },
+    {
+        "merged": "com.example.expensetracker.app-debug-90:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.example.expensetracker.app-main-92:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.expensetracker.app-debug-90:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.example.expensetracker.app-main-92:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/xml_data_extraction_rules.xml.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/anim_logo_animation.xml.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/anim/logo_animation.xml"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/mipmap-mdpi/ic_launcher_round.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/anim_app_name_animation.xml.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/anim/app_name_animation.xml"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.expensetracker.app-debug-90:/drawable_logo_app_rounded.png.flat",
+        "source": "com.example.expensetracker.app-main-92:/drawable/logo_app_rounded.png"
+    },
+    {
+        "merged": "com.example.expensetracker.app-debug-90:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.example.expensetracker.app-main-92:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.example.expensetracker.app-debug-90:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.example.expensetracker.app-main-92:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/xml_backup_rules.xml.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/anim_loading_animation.xml.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/anim/loading_animation.xml"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/anim_fade_in.xml.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/anim/fade_in.xml"
+    },
+    {
+        "merged": "com.example.expensetracker.app-debug-90:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.example.expensetracker.app-main-92:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/anim_fade_out.xml.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/anim/fade_out.xml"
+    },
+    {
+        "merged": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-debug-90:/layout_activity_splash.xml.flat",
+        "source": "/Users/mac/.gradle/daemon/8.13/com.example.expensetracker.app-main-92:/layout/activity_splash.xml"
+    }
+]

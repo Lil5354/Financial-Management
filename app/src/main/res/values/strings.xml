@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Nono</string>
+    
+    <!-- Splash Screen -->
+    <string name="splash_loading">Đang tải...</string>
+    
+    <!-- Main Navigation -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_expenses">Chi tiêu</string>
+    <string name="nav_reports">Báo cáo</string>
+    <string name="nav_settings">Cài đặt</string>
+    
+    <!-- Home Screen -->
+    <string name="home_welcome">Chào mừng!</string>
+    <string name="home_total_expense">Tổng chi tiêu tháng này</string>
+    <string name="home_recent_expenses">Chi tiêu gần đây</string>
+    <string name="home_add_expense">Thêm chi tiêu</string>
+    <string name="home_view_all">Xem tất cả</string>
+    
+    <!-- Expense Management -->
+    <string name="expense_title">Tiêu đề</string>
+    <string name="expense_amount">Số tiền</string>
+    <string name="expense_category">Danh mục</string>
+    <string name="expense_date">Ngày</string>
+    <string name="expense_note">Ghi chú</string>
+    <string name="expense_image">Hình ảnh</string>
+    
+    <string name="add_expense">Thêm chi tiêu</string>
+    <string name="edit_expense">Sửa chi tiêu</string>
+    <string name="delete_expense">Xóa chi tiêu</string>
+    <string name="save">Lưu</string>
+    <string name="cancel">Hủy</string>
+    <string name="delete">Xóa</string>
+    <string name="edit">Sửa</string>
+    
+    <!-- Categories -->
+    <string name="category_food">Ăn uống</string>
+    <string name="category_transport">Đi lại</string>
+    <string name="category_shopping">Mua sắm</string>
+    <string name="category_entertainment">Giải trí</string>
+    <string name="category_health">Sức khỏe</string>
+    <string name="category_education">Giáo dục</string>
+    <string name="category_other">Khác</string>
+    
+    <!-- Reports -->
+    <string name="reports_title">Báo cáo chi tiêu</string>
+    <string name="reports_daily">Hàng ngày</string>
+    <string name="reports_weekly">Hàng tuần</string>
+    <string name="reports_monthly">Hàng tháng</string>
+    <string name="reports_yearly">Hàng năm</string>
+    <string name="reports_total">Tổng cộng</string>
+    <string name="reports_average">Trung bình</string>
+    <string name="reports_forecast">Dự đoán</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Cài đặt</string>
+    <string name="settings_notifications">Thông báo</string>
+    <string name="settings_backup">Sao lưu dữ liệu</string>
+    <string name="settings_sync">Đồng bộ Firebase</string>
+    <string name="settings_categories">Quản lý danh mục</string>
+    <string name="settings_about">Giới thiệu</string>
+    
+    <!-- Notifications -->
+    <string name="notification_reminder_title">Nhắc nhở nhập chi tiêu</string>
+    <string name="notification_reminder_body">Đừng quên ghi lại chi tiêu hôm nay!</string>
+    
+    <!-- AI Features -->
+    <string name="ai_ocr_title">Quét hóa đơn</string>
+    <string name="ai_ocr_description">Chụp ảnh hóa đơn để tự động điền thông tin</string>
+    <string name="ai_auto_category">Tự động phân loại</string>
+    <string name="ai_forecast">Dự đoán chi tiêu</string>
+    
+    <!-- Messages -->
+    <string name="message_success">Thành công!</string>
+    <string name="message_error">Có lỗi xảy ra</string>
+    <string name="message_loading">Đang tải...</string>
+    <string name="message_no_data">Không có dữ liệu</string>
+    <string name="message_confirm_delete">Bạn có chắc muốn xóa chi tiêu này?</string>
+    
+    <!-- Validation -->
+    <string name="validation_title_required">Vui lòng nhập tiêu đề</string>
+    <string name="validation_amount_required">Vui lòng nhập số tiền</string>
+    <string name="validation_amount_invalid">Số tiền không hợp lệ</string>
+    <string name="validation_category_required">Vui lòng chọn danh mục</string>
+    
+    <!-- Currency -->
+    <string name="currency_symbol">₫</string>
+    <string name="currency_format">%,.0f ₫</string>
+    
+    <!-- Date Format -->
+    <string name="date_format">dd/MM/yyyy</string>
+    <string name="date_time_format">dd/MM/yyyy HH:mm</string>
+    
+    <!-- Empty States -->
+    <string name="empty_expenses">Chưa có chi tiêu nào</string>
+    <string name="empty_expenses_description">Hãy thêm chi tiêu đầu tiên của bạn</string>
+    <string name="empty_categories">Chưa có danh mục nào</string>
+    <string name="empty_reports">Chưa có báo cáo nào</string>
+    
+    <!-- Actions -->
+    <string name="action_take_photo">Chụp ảnh</string>
+    <string name="action_choose_photo">Chọn ảnh</string>
+    <string name="action_remove_photo">Xóa ảnh</string>
+    <string name="action_retry">Thử lại</string>
+    <string name="action_refresh">Làm mới</string>
+    <string name="action_share">Chia sẻ</string>
+    <string name="action_export">Xuất dữ liệu</string>
+    
+    <!-- Permissions -->
+    <string name="permission_camera_title">Quyền truy cập camera</string>
+    <string name="permission_camera_message">Ứng dụng cần quyền truy cập camera để chụp ảnh hóa đơn</string>
+    <string name="permission_storage_title">Quyền truy cập bộ nhớ</string>
+    <string name="permission_storage_message">Ứng dụng cần quyền truy cập bộ nhớ để lưu ảnh</string>
+    
+    <!-- Firebase -->
+    <string name="firebase_sync_success">Đồng bộ thành công</string>
+    <string name="firebase_sync_error">Lỗi đồng bộ</string>
+    <string name="firebase_backup_success">Sao lưu thành công</string>
+    <string name="firebase_restore_success">Khôi phục thành công</string>
+    
+</resources>

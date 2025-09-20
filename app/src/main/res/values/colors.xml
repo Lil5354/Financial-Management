@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors - Money Green Theme -->
+    <color name="primary_color">#4CAF50</color>
+    <color name="primary_dark">#388E3C</color>
+    <color name="primary_light">#C8E6C9</color>
+    
+    <!-- Secondary Colors -->
+    <color name="secondary_color">#FF9800</color>
+    <color name="secondary_dark">#F57C00</color>
+    <color name="secondary_light">#FFE0B2</color>
+    
+    <!-- Background Colors -->
+    <color name="background_color">#FAFAFA</color>
+    <color name="surface_color">#FFFFFF</color>
+    <color name="card_background">#FFFFFF</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#BDBDBD</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    
+    <!-- Basic Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+    
+    <!-- Status Colors -->
+    <color name="success_color">#4CAF50</color>
+    <color name="error_color">#F44336</color>
+    <color name="warning_color">#FF9800</color>
+    <color name="info_color">#2196F3</color>
+    
+    <!-- Category Colors -->
+    <color name="category_food">#FF5722</color>
+    <color name="category_transport">#3F51B5</color>
+    <color name="category_shopping">#E91E63</color>
+    <color name="category_entertainment">#9C27B0</color>
+    <color name="category_health">#4CAF50</color>
+    <color name="category_education">#FF9800</color>
+    <color name="category_other">#607D8B</color>
+    
+    <!-- Bottom Navigation -->
+    <color name="bottom_nav_color">#4CAF50</color>
+    <color name="bottom_nav_selected">#4CAF50</color>
+    <color name="bottom_nav_unselected">#757575</color>
+    
+    <!-- Splash Screen -->
+    <color name="splash_background">#4CAF50</color>
+    <color name="splash_text">#FFFFFF</color>
+    
+    <!-- Chart Colors -->
+    <color name="chart_color_1">#4CAF50</color>
+    <color name="chart_color_2">#8BC34A</color>
+    <color name="chart_color_3">#CDDC39</color>
+    <color name="chart_color_4">#FF9800</color>
+    <color name="chart_color_5">#FF5722</color>
+    <color name="chart_color_6">#9C27B0</color>
+    <color name="chart_color_7">#607D8B</color>
+    
+    <!-- Divider -->
+    <color name="divider_color">#E0E0E0</color>
+    
+    <!-- Overlay -->
+    <color name="overlay_dark">#80000000</color>
+    <color name="overlay_light">#80FFFFFF</color>
+</resources>

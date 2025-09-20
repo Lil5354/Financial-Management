@@ -1,0 +1,6 @@
+[
+    {
+        "merged": "com.example.expensetracker.app-mergeReleaseResources-90:/layout/activity_splash.xml",
+        "source": "com.example.expensetracker.app-main-92:/layout/activity_splash.xml"
+    }
+]
