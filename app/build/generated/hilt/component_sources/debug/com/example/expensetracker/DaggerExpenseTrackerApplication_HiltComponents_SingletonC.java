@@ -7,7 +7,20 @@ import android.view.View;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModel;
+import com.example.expensetracker.data.dao.ChatMessageDao;
+import com.example.expensetracker.data.database.ExpenseTrackerDatabase;
+import com.example.expensetracker.data.repository.ChatRepository;
+import com.example.expensetracker.data.service.GeminiService;
+import com.example.expensetracker.di.DatabaseModule;
+import com.example.expensetracker.di.DatabaseModule_ProvideChatMessageDaoFactory;
+import com.example.expensetracker.di.DatabaseModule_ProvideExpenseTrackerDatabaseFactory;
+import com.example.expensetracker.di.RepositoryModule;
+import com.example.expensetracker.di.RepositoryModule_ProvideChatRepositoryFactory;
+import com.example.expensetracker.di.ServiceModule;
+import com.example.expensetracker.di.ServiceModule_ProvideGeminiServiceFactory;
 import com.example.expensetracker.ui.main.MainActivity;
+import com.example.expensetracker.ui.viewmodel.ChatViewModel;
+import com.example.expensetracker.ui.viewmodel.ChatViewModel_HiltModules_KeyModule_ProvideFactory;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import dagger.hilt.android.ActivityRetainedLifecycle;
@@ -24,6 +37,7 @@ import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories;
 import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories_InternalFactoryFactory_Factory;
 import dagger.hilt.android.internal.managers.ActivityRetainedComponentManager_LifecycleModule_ProvideActivityRetainedLifecycleFactory;
 import dagger.hilt.android.internal.modules.ApplicationContextModule;
+import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideContextFactory;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.DoubleCheck;
 import dagger.internal.Preconditions;
@@ -46,20 +60,23 @@ public final class DaggerExpenseTrackerApplication_HiltComponents_SingletonC {
     return new Builder();
   }
 
-  public static ExpenseTrackerApplication_HiltComponents.SingletonC create() {
-    return new Builder().build();
-  }
-
   public static final class Builder {
+    private ApplicationContextModule applicationContextModule;
+
     private Builder() {
+    }
+
+    public Builder applicationContextModule(ApplicationContextModule applicationContextModule) {
+      this.applicationContextModule = Preconditions.checkNotNull(applicationContextModule);
+      return this;
     }
 
     /**
      * @deprecated This module is declared, but an instance is not used in the component. This method is a no-op. For more, see https://dagger.dev/unused-modules.
      */
     @Deprecated
-    public Builder applicationContextModule(ApplicationContextModule applicationContextModule) {
-      Preconditions.checkNotNull(applicationContextModule);
+    public Builder databaseModule(DatabaseModule databaseModule) {
+      Preconditions.checkNotNull(databaseModule);
       return this;
     }
 
@@ -73,8 +90,27 @@ public final class DaggerExpenseTrackerApplication_HiltComponents_SingletonC {
       return this;
     }
 
+    /**
+     * @deprecated This module is declared, but an instance is not used in the component. This method is a no-op. For more, see https://dagger.dev/unused-modules.
+     */
+    @Deprecated
+    public Builder repositoryModule(RepositoryModule repositoryModule) {
+      Preconditions.checkNotNull(repositoryModule);
+      return this;
+    }
+
+    /**
+     * @deprecated This module is declared, but an instance is not used in the component. This method is a no-op. For more, see https://dagger.dev/unused-modules.
+     */
+    @Deprecated
+    public Builder serviceModule(ServiceModule serviceModule) {
+      Preconditions.checkNotNull(serviceModule);
+      return this;
+    }
+
     public ExpenseTrackerApplication_HiltComponents.SingletonC build() {
-      return new SingletonCImpl();
+      Preconditions.checkBuilderRequirement(applicationContextModule, ApplicationContextModule.class);
+      return new SingletonCImpl(applicationContextModule);
     }
   }
 
@@ -358,12 +394,12 @@ public final class DaggerExpenseTrackerApplication_HiltComponents_SingletonC {
 
     @Override
     public DefaultViewModelFactories.InternalFactoryFactory getHiltInternalFactoryFactory() {
-      return DefaultViewModelFactories_InternalFactoryFactory_Factory.newInstance(ImmutableSet.<String>of(), new ViewModelCBuilder(singletonCImpl, activityRetainedCImpl));
+      return DefaultViewModelFactories_InternalFactoryFactory_Factory.newInstance(getViewModelKeys(), new ViewModelCBuilder(singletonCImpl, activityRetainedCImpl));
     }
 
     @Override
     public Set<String> getViewModelKeys() {
-      return ImmutableSet.<String>of();
+      return ImmutableSet.<String>of(ChatViewModel_HiltModules_KeyModule_ProvideFactory.provide());
     }
 
     @Override
@@ -389,18 +425,56 @@ public final class DaggerExpenseTrackerApplication_HiltComponents_SingletonC {
 
     private final ViewModelCImpl viewModelCImpl = this;
 
+    private Provider<ChatViewModel> chatViewModelProvider;
+
     private ViewModelCImpl(SingletonCImpl singletonCImpl,
         ActivityRetainedCImpl activityRetainedCImpl, SavedStateHandle savedStateHandleParam,
         ViewModelLifecycle viewModelLifecycleParam) {
       this.singletonCImpl = singletonCImpl;
       this.activityRetainedCImpl = activityRetainedCImpl;
 
+      initialize(savedStateHandleParam, viewModelLifecycleParam);
 
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize(final SavedStateHandle savedStateHandleParam,
+        final ViewModelLifecycle viewModelLifecycleParam) {
+      this.chatViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
     }
 
     @Override
     public Map<String, Provider<ViewModel>> getHiltViewModelMap() {
-      return ImmutableMap.<String, Provider<ViewModel>>of();
+      return ImmutableMap.<String, Provider<ViewModel>>of("com.example.expensetracker.ui.viewmodel.ChatViewModel", ((Provider) chatViewModelProvider));
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final ActivityRetainedCImpl activityRetainedCImpl;
+
+      private final ViewModelCImpl viewModelCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
+          ViewModelCImpl viewModelCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.activityRetainedCImpl = activityRetainedCImpl;
+        this.viewModelCImpl = viewModelCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.example.expensetracker.ui.viewmodel.ChatViewModel 
+          return (T) new ChatViewModel(singletonCImpl.provideChatRepositoryProvider.get());
+
+          default: throw new AssertionError(id);
+        }
+      }
     }
   }
 
@@ -473,11 +547,31 @@ public final class DaggerExpenseTrackerApplication_HiltComponents_SingletonC {
   }
 
   private static final class SingletonCImpl extends ExpenseTrackerApplication_HiltComponents.SingletonC {
+    private final ApplicationContextModule applicationContextModule;
+
     private final SingletonCImpl singletonCImpl = this;
 
-    private SingletonCImpl() {
+    private Provider<ExpenseTrackerDatabase> provideExpenseTrackerDatabaseProvider;
 
+    private Provider<GeminiService> provideGeminiServiceProvider;
 
+    private Provider<ChatRepository> provideChatRepositoryProvider;
+
+    private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
+      this.applicationContextModule = applicationContextModuleParam;
+      initialize(applicationContextModuleParam);
+
+    }
+
+    private ChatMessageDao chatMessageDao() {
+      return DatabaseModule_ProvideChatMessageDaoFactory.provideChatMessageDao(provideExpenseTrackerDatabaseProvider.get());
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize(final ApplicationContextModule applicationContextModuleParam) {
+      this.provideExpenseTrackerDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<ExpenseTrackerDatabase>(singletonCImpl, 1));
+      this.provideGeminiServiceProvider = DoubleCheck.provider(new SwitchingProvider<GeminiService>(singletonCImpl, 2));
+      this.provideChatRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<ChatRepository>(singletonCImpl, 0));
     }
 
     @Override
@@ -498,6 +592,34 @@ public final class DaggerExpenseTrackerApplication_HiltComponents_SingletonC {
     @Override
     public ServiceComponentBuilder serviceComponentBuilder() {
       return new ServiceCBuilder(singletonCImpl);
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.example.expensetracker.data.repository.ChatRepository 
+          return (T) RepositoryModule_ProvideChatRepositoryFactory.provideChatRepository(singletonCImpl.chatMessageDao(), singletonCImpl.provideGeminiServiceProvider.get());
+
+          case 1: // com.example.expensetracker.data.database.ExpenseTrackerDatabase 
+          return (T) DatabaseModule_ProvideExpenseTrackerDatabaseFactory.provideExpenseTrackerDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 2: // com.example.expensetracker.data.service.GeminiService 
+          return (T) ServiceModule_ProvideGeminiServiceFactory.provideGeminiService();
+
+          default: throw new AssertionError(id);
+        }
+      }
     }
   }
 }

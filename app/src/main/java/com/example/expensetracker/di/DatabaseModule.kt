@@ -1,0 +1,59 @@
+package com.example.expensetracker.di
+
+import android.content.Context
+import androidx.room.Room
+import com.example.expensetracker.data.dao.ChatMessageDao
+import com.example.expensetracker.data.database.ExpenseTrackerDatabase
+import com.example.expensetracker.data.repository.ChatRepository
+import com.example.expensetracker.data.service.GeminiService
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseModule {
+    
+    @Provides
+    @Singleton
+    fun provideExpenseTrackerDatabase(@ApplicationContext context: Context): ExpenseTrackerDatabase {
+        return Room.databaseBuilder(
+            context,
+            ExpenseTrackerDatabase::class.java,
+            "expense_tracker_database"
+        ).build()
+    }
+    
+    @Provides
+    fun provideChatMessageDao(database: ExpenseTrackerDatabase): ChatMessageDao {
+        return database.chatMessageDao()
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object ServiceModule {
+    
+    @Provides
+    @Singleton
+    fun provideGeminiService(): GeminiService {
+        return GeminiService()
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object RepositoryModule {
+    
+    @Provides
+    @Singleton
+    fun provideChatRepository(
+        chatMessageDao: ChatMessageDao,
+        geminiService: GeminiService
+    ): ChatRepository {
+        return ChatRepository(chatMessageDao, geminiService)
+    }
+}

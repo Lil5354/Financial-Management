@@ -231,7 +231,7 @@ fun AIScreen(
             0 -> AIAssistantContent(aiInsights, cardColor, textColor, mutedTextColor, accentColor, successColor, warningColor, errorColor)
             1 -> OCRContent(cardColor, textColor, mutedTextColor, accentColor)
             2 -> ForecastingContent(cardColor, textColor, mutedTextColor, accentColor, successColor, warningColor)
-            3 -> ChatAIContent(chatMessages, chatInput, { chatInput = it }, isListening, { isListening = it }, cardColor, textColor, mutedTextColor, accentColor)
+            3 -> ChatScreen(isDarkTheme)
         }
     }
 }

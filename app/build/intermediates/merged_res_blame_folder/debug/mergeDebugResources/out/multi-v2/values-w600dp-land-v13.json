@@ -4,7 +4,7 @@
             "outputFile": "com.example.expensetracker.app-mergeDebugResources-88:/values-w600dp-land-v13/values-w600dp-land-v13.xml",
             "map": [
                 {
-                    "source": "/Users/mac/.gradle/caches/8.13/transforms/ebaca6712659a5519aca5a59fc00fdbe/transformed/material-1.11.0/res/values-w600dp-land-v13/values-w600dp-land-v13.xml",
+                    "source": "C:\\Users\\Admin\\.gradle\\caches\\8.13\\transforms\\ebaca6712659a5519aca5a59fc00fdbe\\transformed\\material-1.11.0\\res\\values-w600dp-land-v13\\values-w600dp-land-v13.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

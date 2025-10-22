@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace 'com.example.expensetracker'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.example.expensetracker"
         minSdk 24
-        targetSdk 34
+        targetSdk 36
         versionCode 1
         versionName "1.0"
 
@@ -152,6 +152,9 @@ dependencies {
     
     // Date & Time
     implementation 'org.jetbrains.kotlinx:kotlinx-datetime:0.4.1'
+    
+    // Gemini AI
+    implementation 'com.google.ai.client.generativeai:generativeai:0.2.2'
     
     // Permissions
     implementation 'com.guolindev.permissionx:permissionx:1.7.1'

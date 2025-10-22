@@ -1,6 +1,10 @@
 package com.example.expensetracker;
 
+import com.example.expensetracker.di.DatabaseModule;
+import com.example.expensetracker.di.RepositoryModule;
+import com.example.expensetracker.di.ServiceModule;
 import com.example.expensetracker.ui.main.MainActivity_GeneratedInjector;
+import com.example.expensetracker.ui.viewmodel.ChatViewModel_HiltModules;
 import dagger.Binds;
 import dagger.Component;
 import dagger.Module;
@@ -116,9 +120,12 @@ public final class ExpenseTrackerApplication_HiltComponents {
   @Component(
       modules = {
           ApplicationContextModule.class,
+          DatabaseModule.class,
           ActivityRetainedCBuilderModule.class,
           ServiceCBuilderModule.class,
-          HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule.class
+          HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule.class,
+          RepositoryModule.class,
+          ServiceModule.class
       }
   )
   @Singleton
@@ -141,6 +148,7 @@ public final class ExpenseTrackerApplication_HiltComponents {
 
   @Subcomponent(
       modules = {
+          ChatViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class
@@ -178,7 +186,10 @@ public final class ExpenseTrackerApplication_HiltComponents {
   }
 
   @Subcomponent(
-      modules = HiltWrapper_HiltViewModelFactory_ViewModelModule.class
+      modules = {
+          ChatViewModel_HiltModules.BindsModule.class,
+          HiltWrapper_HiltViewModelFactory_ViewModelModule.class
+      }
   )
   @ViewModelScoped
   public abstract static class ViewModelC implements ViewModelComponent,

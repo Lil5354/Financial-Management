@@ -4,7 +4,7 @@
             "outputFile": "com.example.expensetracker.app-mergeDebugResources-88:/values-h720dp-v13/values-h720dp-v13.xml",
             "map": [
                 {
-                    "source": "/Users/mac/.gradle/caches/8.13/transforms/4031de72bcc1d29740229278bfe3019d/transformed/appcompat-1.6.1/res/values-h720dp-v13/values-h720dp-v13.xml",
+                    "source": "C:\\Users\\Admin\\.gradle\\caches\\8.13\\transforms\\4031de72bcc1d29740229278bfe3019d\\transformed\\appcompat-1.6.1\\res\\values-h720dp-v13\\values-h720dp-v13.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
