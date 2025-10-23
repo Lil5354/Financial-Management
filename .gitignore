@@ -4,6 +4,12 @@
 *.apk
 *.aab
 
+# APK files (explicitly ignore all APK locations)
+app/build/outputs/apk/
+app/build/intermediates/apk/
+**/outputs/apk/
+**/intermediates/apk/
+
 # Gradle files
 .gradle/
 gradle-app.setting
