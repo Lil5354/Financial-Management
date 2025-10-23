@@ -20,50 +20,65 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.expensetracker.data.entity.Expense
+import com.example.expensetracker.ui.viewmodel.ExpenseViewModel
+import com.example.expensetracker.ui.viewmodel.CategoryViewModel
+import com.example.expensetracker.ui.viewmodel.CrudState
 import java.text.SimpleDateFormat
 import java.util.*
-
-// Data class cho Category
-data class Category(
-    val id: String,
-    val name: String,
-    val icon: ImageVector,
-    val color: Color
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddExpenseScreen(
     onNavigateBack: () -> Unit,
     onSaveExpense: (Expense) -> Unit = {},
-    isDarkTheme: Boolean = true
+    isDarkTheme: Boolean = true,
+    expenseViewModel: ExpenseViewModel = hiltViewModel(),
+    categoryViewModel: CategoryViewModel = hiltViewModel()
 ) {
     val backgroundColor = if (isDarkTheme) Color(0xFF0F0F0F) else Color(0xFFFAFAFA)
     val cardColor = if (isDarkTheme) Color(0xFF1F2937) else Color.White
     val textColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
     val mutedTextColor = if (isDarkTheme) Color(0xFF9CA3AF) else Color(0xFF6B7280)
     
+    // Collect states from ViewModels
+    val isLoading by expenseViewModel.isLoading.collectAsState()
+    val errorMessage by expenseViewModel.errorMessage.collectAsState()
+    val crudState by expenseViewModel.crudState.collectAsState()
+    val categories by categoryViewModel.categories.collectAsState()
+    val isLoadingCategories by categoryViewModel.isLoading.collectAsState()
+    val categoryErrorMessage by categoryViewModel.errorMessage.collectAsState()
+    
     // Form state
     var title by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<Category?>(null) }
+    var selectedCategory by remember { mutableStateOf<com.example.expensetracker.data.entity.Category?>(null) }
     var selectedDate by remember { mutableStateOf(Date()) }
     var isExpense by remember { mutableStateOf(true) }
     var showDatePicker by remember { mutableStateOf(false) }
     
-    // Categories
-    val categories = remember {
-        listOf(
-            Category("food", "Ăn uống", Icons.Default.Restaurant, Color(0xFFF59E0B)),
-            Category("transport", "Giao thông", Icons.Default.DirectionsCar, Color(0xFF3B82F6)),
-            Category("shopping", "Mua sắm", Icons.Default.ShoppingBag, Color(0xFF8B5CF6)),
-            Category("entertainment", "Giải trí", Icons.Default.Movie, Color(0xFFEC4899)),
-            Category("health", "Sức khỏe", Icons.Default.LocalHospital, Color(0xFF10B981)),
-            Category("education", "Giáo dục", Icons.Default.School, Color(0xFF06B6D4)),
-            Category("income", "Thu nhập", Icons.Default.AccountBalanceWallet, Color(0xFF10B981)),
-            Category("other", "Khác", Icons.Default.Category, Color(0xFF6B7280))
-        )
+    // Load categories when screen is first displayed
+    LaunchedEffect(Unit) {
+        categoryViewModel.loadCategories()
+    }
+    
+    // Handle successful save
+    LaunchedEffect(crudState) {
+        when (crudState) {
+            is CrudState.Success -> {
+                onNavigateBack()
+            }
+            else -> { /* No-op */ }
+        }
+    }
+    
+    // Clear error when form fields change
+    LaunchedEffect(title, amount, note) {
+        if (errorMessage != null) {
+            expenseViewModel.clearError()
+        }
     }
     
     // Validation
@@ -218,6 +233,45 @@ fun AddExpenseScreen(
                 shape = RoundedCornerShape(12.dp)
             )
             
+            // Error message
+            if (errorMessage != null) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEF4444).copy(alpha = 0.1f)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = "Lỗi",
+                            tint = Color(0xFFEF4444),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = errorMessage!!,
+                            color = Color(0xFFEF4444),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        IconButton(
+                            onClick = { expenseViewModel.clearError() },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Đóng",
+                                tint = Color(0xFFEF4444),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+            }
+            
             // Category Selection
             Column {
                 Text(
@@ -228,16 +282,78 @@ fun AddExpenseScreen(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(categories) { category ->
-                        CategoryChip(
-                            category = category,
-                            isSelected = selectedCategory?.id == category.id,
-                            onClick = { selectedCategory = category },
-                            textColor = textColor
-                        )
+                when {
+                    isLoadingCategories -> {
+                        // Hiển thị loading spinner
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(80.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = Color(0xFF10B981),
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                    categoryErrorMessage != null -> {
+                        // Hiển thị error message với retry button
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(80.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Lỗi: ${categoryErrorMessage}",
+                                    color = Color.Red,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                TextButton(
+                                    onClick = { categoryViewModel.loadCategories() }
+                                ) {
+                                    Text(
+                                        text = "Thử lại",
+                                        color = Color(0xFF10B981)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    categories.isEmpty() -> {
+                        // Hiển thị thông báo không có danh mục
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(80.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Không có danh mục nào",
+                                color = mutedTextColor,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                    else -> {
+                        // Hiển thị danh sách categories
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(categories) { category ->
+                                CategoryChip(
+                                    category = category,
+                                    isSelected = selectedCategory?.id == category.id,
+                                    onClick = { selectedCategory = category },
+                                    textColor = textColor
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -329,14 +445,13 @@ fun AddExpenseScreen(
                             note = note,
                             isExpense = isExpense
                         )
-                        onSaveExpense(expense)
-                        onNavigateBack()
+                        expenseViewModel.addExpense(expense)
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                enabled = isFormValid,
+                enabled = isFormValid && !isLoading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF10B981),
                     contentColor = Color.White,
@@ -345,20 +460,27 @@ fun AddExpenseScreen(
                 ),
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Save,
-                        contentDescription = "Lưu",
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
                         modifier = Modifier.size(20.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = if (isExpense) "Lưu chi tiêu" else "Lưu thu nhập",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Save,
+                            contentDescription = "Lưu",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (isExpense) "Lưu chi tiêu" else "Lưu thu nhập",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -383,7 +505,7 @@ fun AddExpenseScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryChip(
-    category: Category,
+    category: com.example.expensetracker.data.entity.Category,
     isSelected: Boolean,
     onClick: () -> Unit,
     textColor: Color
@@ -391,7 +513,7 @@ fun CategoryChip(
     Card(
         modifier = Modifier.width(100.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) category.color else Color.Transparent
+            containerColor = if (isSelected) Color(android.graphics.Color.parseColor(category.color)) else Color.Transparent
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         shape = RoundedCornerShape(12.dp),
@@ -404,9 +526,9 @@ fun CategoryChip(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                imageVector = category.icon,
+                imageVector = getCategoryIconFromString(category.icon),
                 contentDescription = category.name,
-                tint = if (isSelected) Color.White else category.color,
+                tint = if (isSelected) Color.White else Color(android.graphics.Color.parseColor(category.color)),
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -417,6 +539,21 @@ fun CategoryChip(
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
             )
         }
+    }
+}
+
+// Helper function to get icon from string
+fun getCategoryIconFromString(iconString: String): ImageVector {
+    return when (iconString) {
+        "restaurant" -> Icons.Default.Restaurant
+        "directions_car" -> Icons.Default.DirectionsCar
+        "shopping_bag" -> Icons.Default.ShoppingBag
+        "movie" -> Icons.Default.Movie
+        "local_hospital" -> Icons.Default.LocalHospital
+        "school" -> Icons.Default.School
+        "account_balance_wallet" -> Icons.Default.AccountBalanceWallet
+        "category" -> Icons.Default.Category
+        else -> Icons.Default.Category
     }
 }
 
@@ -485,7 +622,12 @@ fun AddExpenseScreenPreview() {
 @Composable
 fun CategoryChipPreview() {
     CategoryChip(
-        category = Category("food", "Ăn uống", Icons.Default.Restaurant, Color(0xFFF59E0B)),
+        category = com.example.expensetracker.data.entity.Category(
+            id = "food", 
+            name = "Ăn uống", 
+            icon = "restaurant", 
+            color = "#F59E0B"
+        ),
         isSelected = true,
         onClick = {},
         textColor = Color.White

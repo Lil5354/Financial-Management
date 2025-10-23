@@ -12,34 +12,169 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import java.text.SimpleDateFormat
-import java.util.*
-
-// Data class cho báo cáo
-data class CategoryReport(
-    val category: String,
-    val amount: Long,
-    val percentage: Float,
-    val color: Color,
-    val icon: ImageVector
-)
-
-data class MonthlyReport(
-    val month: String,
-    val income: Long,
-    val expense: Long,
-    val balance: Long
-)
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.expensetracker.ui.viewmodel.ReportsViewModel
+import com.example.expensetracker.ui.viewmodel.ReportsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportsScreen(
+    onNavigateBack: () -> Unit,
+    isDarkTheme: Boolean = true,
+    viewModel: ReportsViewModel = hiltViewModel()
+) {
+    val reportsState by viewModel.reportsState.collectAsState()
+    val selectedPeriod by viewModel.selectedPeriod.collectAsState()
+    val summaryData by viewModel.summaryData.collectAsState()
+    val categoryBreakdown by viewModel.categoryBreakdown.collectAsState()
+    val monthlyTrends by viewModel.monthlyTrends.collectAsState()
+    val smartInsights by viewModel.smartInsights.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    
+    // Load data khi screen được tạo
+    LaunchedEffect(Unit) {
+        viewModel.loadReportsData()
+    }
+    
+    // Reload data khi period thay đổi
+    LaunchedEffect(selectedPeriod) {
+        viewModel.loadReportsData(selectedPeriod)
+    }
+    
+    when (val state = reportsState) {
+        is ReportsState.Loading -> {
+            LoadingScreen(isDarkTheme = isDarkTheme)
+        }
+        is ReportsState.Error -> {
+            ErrorScreen(
+                message = state.message,
+                onRetry = { viewModel.loadReportsData() },
+                isDarkTheme = isDarkTheme
+            )
+        }
+        is ReportsState.Success -> {
+            ReportsContent(
+                selectedPeriod = selectedPeriod,
+                summaryData = summaryData,
+                categoryBreakdown = categoryBreakdown,
+                monthlyTrends = monthlyTrends,
+                smartInsights = smartInsights,
+                isLoading = isLoading,
+                onPeriodChange = { period -> 
+                    viewModel.loadReportsData(period) 
+                },
+                onNavigateBack = onNavigateBack,
+                isDarkTheme = isDarkTheme
+            )
+        }
+    }
+}
+
+@Composable
+fun LoadingScreen(isDarkTheme: Boolean = true) {
+    val backgroundColor = if (isDarkTheme) Color(0xFF0F0F0F) else Color(0xFFFAFAFA)
+    val textColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            CircularProgressIndicator(
+                color = Color(0xFF10B981),
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Đang tải báo cáo...",
+                color = textColor,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+    }
+}
+
+@Composable
+fun ErrorScreen(
+    message: String,
+    onRetry: () -> Unit,
+    isDarkTheme: Boolean = true
+) {
+    val backgroundColor = if (isDarkTheme) Color(0xFF0F0F0F) else Color(0xFFFAFAFA)
+    val textColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
+    val cardColor = if (isDarkTheme) Color(0xFF1F2937) else Color.White
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier.padding(20.dp),
+            colors = CardDefaults.cardColors(containerColor = cardColor),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Error,
+                    contentDescription = "Error",
+                    tint = Color(0xFFEF4444),
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Có lỗi xảy ra",
+                    color = textColor,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = message,
+                    color = textColor.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = onRetry,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF10B981)
+                    )
+                ) {
+                    Text(
+                        text = "Thử lại",
+                        color = Color.White
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ReportsContent(
+    selectedPeriod: ReportsViewModel.ReportPeriod,
+    summaryData: ReportsViewModel.SummaryData?,
+    categoryBreakdown: List<ReportsViewModel.CategoryReport>,
+    monthlyTrends: List<ReportsViewModel.MonthlyTrend>,
+    smartInsights: List<ReportsViewModel.SmartInsight>,
+    isLoading: Boolean,
+    onPeriodChange: (ReportsViewModel.ReportPeriod) -> Unit,
     onNavigateBack: () -> Unit,
     isDarkTheme: Boolean = true
 ) {
@@ -48,32 +183,6 @@ fun ReportsScreen(
     val textColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
     val mutedTextColor = if (isDarkTheme) Color(0xFF9CA3AF) else Color(0xFF6B7280)
     
-    // Sample data cho báo cáo
-    val categoryReports = remember {
-        listOf(
-            CategoryReport("Ăn uống", 1200000, 35.5f, Color(0xFFF59E0B), Icons.Default.Restaurant),
-            CategoryReport("Giao thông", 800000, 23.6f, Color(0xFF3B82F6), Icons.Default.DirectionsCar),
-            CategoryReport("Mua sắm", 600000, 17.7f, Color(0xFF8B5CF6), Icons.Default.ShoppingBag),
-            CategoryReport("Giải trí", 400000, 11.8f, Color(0xFFEC4899), Icons.Default.Movie),
-            CategoryReport("Sức khỏe", 200000, 5.9f, Color(0xFF10B981), Icons.Default.LocalHospital),
-            CategoryReport("Khác", 180000, 5.3f, Color(0xFF6B7280), Icons.Default.Category)
-        )
-    }
-    
-    val monthlyReports = remember {
-        listOf(
-            MonthlyReport("Tháng 1", 5000000, 3200000, 1800000),
-            MonthlyReport("Tháng 2", 5200000, 3400000, 1800000),
-            MonthlyReport("Tháng 3", 4800000, 3000000, 1800000),
-            MonthlyReport("Tháng 4", 5500000, 3600000, 1900000),
-            MonthlyReport("Tháng 5", 5100000, 3300000, 1800000),
-            MonthlyReport("Tháng 6", 5300000, 3500000, 1800000)
-        )
-    }
-    
-    var selectedPeriod by remember { mutableStateOf("Tháng này") }
-    val periods = listOf("Tuần này", "Tháng này", "3 tháng", "6 tháng", "Năm nay")
-    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -81,231 +190,64 @@ fun ReportsScreen(
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        item {
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-        
         // Header
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onNavigateBack,
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại",
-                        tint = textColor,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = "Báo cáo & Thống kê",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = textColor,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            ReportsHeader(
+                onNavigateBack = onNavigateBack,
+                textColor = textColor
+            )
         }
         
         // Period Selector
         item {
-            Column {
-                Text(
-                    text = "Khoảng thời gian",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = textColor,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(periods) { period ->
-                        FilterChip(
-                            onClick = { selectedPeriod = period },
-                            label = { Text(period, color = if (selectedPeriod == period) Color.White else textColor) },
-                            selected = selectedPeriod == period,
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFF10B981),
-                                containerColor = cardColor
-                            )
-                        )
-                    }
-                }
-            }
+            PeriodSelector(
+                selectedPeriod = selectedPeriod,
+                onPeriodChange = onPeriodChange,
+                textColor = textColor,
+                cardColor = cardColor
+            )
         }
         
         // Summary Cards
+        summaryData?.let { data ->
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                SummaryCard(
-                    title = "Tổng thu nhập",
-                    amount = "5,200,000đ",
-                    icon = Icons.Default.TrendingUp,
-                    color = Color(0xFF10B981),
+                SummaryCardsRow(
+                    summaryData = data,
                     cardColor = cardColor,
                     textColor = textColor,
-                    mutedTextColor = mutedTextColor,
-                    modifier = Modifier.weight(1f)
-                )
-                SummaryCard(
-                    title = "Tổng chi tiêu",
-                    amount = "3,380,000đ",
-                    icon = Icons.Default.TrendingDown,
-                    color = Color(0xFFEF4444),
-                    cardColor = cardColor,
-                    textColor = textColor,
-                    mutedTextColor = mutedTextColor,
-                    modifier = Modifier.weight(1f)
+                    mutedTextColor = mutedTextColor
                 )
             }
-        }
-        
-        item {
-            SummaryCard(
-                title = "Số dư",
-                amount = "1,820,000đ",
-                icon = Icons.Default.AccountBalanceWallet,
-                color = Color(0xFF3B82F6),
-                cardColor = cardColor,
-                textColor = textColor,
-                mutedTextColor = mutedTextColor,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
         
         // Category Breakdown
         item {
-            Column {
-                Text(
-                    text = "Chi tiêu theo danh mục",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = textColor,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = cardColor),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp)
-                    ) {
-                        categoryReports.forEach { report ->
-                            CategoryReportItem(
-                                report = report,
+            CategoryBreakdownSection(
+                categoryBreakdown = categoryBreakdown,
+                cardColor = cardColor,
+                textColor = textColor,
+                mutedTextColor = mutedTextColor
+            )
+        }
+        
+        // Monthly Trends
+        item {
+            MonthlyTrendsSection(
+                monthlyTrends = monthlyTrends,
+                cardColor = cardColor,
                                 textColor = textColor,
                                 mutedTextColor = mutedTextColor
                             )
-                            if (report != categoryReports.last()) {
-                                Spacer(modifier = Modifier.height(16.dp))
-                            }
-                        }
-                    }
-                }
-            }
         }
         
-        // Monthly Trend
+        // Smart Insights
         item {
-            Column {
-                Text(
-                    text = "Xu hướng theo tháng",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = textColor,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = cardColor),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp)
-                    ) {
-                        monthlyReports.forEach { report ->
-                            MonthlyReportItem(
-                                report = report,
+            SmartInsightsSection(
+                smartInsights = smartInsights,
+                cardColor = cardColor,
                                 textColor = textColor,
                                 mutedTextColor = mutedTextColor
                             )
-                            if (report != monthlyReports.last()) {
-                                Spacer(modifier = Modifier.height(12.dp))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Insights
-        item {
-            Column {
-                Text(
-                    text = "Thông tin thông minh",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = textColor,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = cardColor),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp)
-                    ) {
-                        InsightItem(
-                            icon = Icons.Default.TrendingUp,
-                            title = "Chi tiêu tăng 8.2%",
-                            description = "So với tháng trước, chủ yếu do ăn uống",
-                            color = Color(0xFF10B981),
-                            textColor = textColor,
-                            mutedTextColor = mutedTextColor
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        InsightItem(
-                            icon = Icons.Default.Warning,
-                            title = "Cần kiểm soát chi tiêu",
-                            description = "Chi tiêu ăn uống chiếm 35.5% tổng chi tiêu",
-                            color = Color(0xFFF59E0B),
-                            textColor = textColor,
-                            mutedTextColor = mutedTextColor
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        InsightItem(
-                            icon = Icons.Default.Star,
-                            title = "Tiết kiệm tốt",
-                            description = "Bạn đã tiết kiệm được 1,820,000đ tháng này",
-                            color = Color(0xFF3B82F6),
-                            textColor = textColor,
-                            mutedTextColor = mutedTextColor
-                        )
-                    }
-                }
-            }
         }
         
         item {
@@ -363,10 +305,314 @@ fun SummaryCard(
     }
 }
 
-// Category Report Item Component
+// ==================== COMPONENT FUNCTIONS ====================
+
+@Composable
+fun ReportsHeader(
+    onNavigateBack: () -> Unit,
+    textColor: Color
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(
+            onClick = onNavigateBack,
+            modifier = Modifier.size(40.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Quay lại",
+                tint = textColor,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = "Báo cáo & Thống kê",
+            style = MaterialTheme.typography.headlineSmall,
+            color = textColor,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PeriodSelector(
+    selectedPeriod: ReportsViewModel.ReportPeriod,
+    onPeriodChange: (ReportsViewModel.ReportPeriod) -> Unit,
+    textColor: Color,
+    cardColor: Color
+) {
+    Column {
+        Text(
+            text = "Khoảng thời gian",
+            style = MaterialTheme.typography.titleMedium,
+            color = textColor,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(ReportsViewModel.ReportPeriod.values().toList()) { period ->
+                FilterChip(
+                    onClick = { onPeriodChange(period) },
+                    label = { 
+                        Text(
+                            period.displayName, 
+                            color = if (selectedPeriod == period) Color.White else textColor
+                        ) 
+                    },
+                    selected = selectedPeriod == period,
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Color(0xFF10B981),
+                        containerColor = cardColor
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SummaryCardsRow(
+    summaryData: ReportsViewModel.SummaryData,
+    cardColor: Color,
+    textColor: Color,
+    mutedTextColor: Color
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SummaryCard(
+            title = "Tổng thu nhập",
+            amount = formatAmountReports(summaryData.totalIncome),
+            icon = Icons.Default.TrendingUp,
+            color = Color(0xFF10B981),
+            cardColor = cardColor,
+            textColor = textColor,
+            mutedTextColor = mutedTextColor,
+            modifier = Modifier.weight(1f)
+        )
+        SummaryCard(
+            title = "Tổng chi tiêu",
+            amount = formatAmountReports(summaryData.totalExpense),
+            icon = Icons.Default.TrendingDown,
+            color = Color(0xFFEF4444),
+            cardColor = cardColor,
+            textColor = textColor,
+            mutedTextColor = mutedTextColor,
+            modifier = Modifier.weight(1f)
+        )
+    }
+    
+    Spacer(modifier = Modifier.height(12.dp))
+    
+    SummaryCard(
+        title = "Số dư",
+        amount = formatAmountReports(summaryData.balance),
+        icon = Icons.Default.AccountBalanceWallet,
+        color = Color(0xFF3B82F6),
+        cardColor = cardColor,
+        textColor = textColor,
+        mutedTextColor = mutedTextColor,
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+fun CategoryBreakdownSection(
+    categoryBreakdown: List<ReportsViewModel.CategoryReport>,
+    cardColor: Color,
+    textColor: Color,
+    mutedTextColor: Color
+) {
+    Column {
+        Text(
+            text = "Chi tiêu theo danh mục",
+            style = MaterialTheme.typography.titleLarge,
+            color = textColor,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        if (categoryBreakdown.isEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = cardColor),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Không có dữ liệu chi tiêu",
+                        color = mutedTextColor,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = cardColor),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp)
+                ) {
+                    categoryBreakdown.forEach { report ->
+                        CategoryReportItem(
+                            report = report,
+                            textColor = textColor,
+                            mutedTextColor = mutedTextColor
+                        )
+                        if (report != categoryBreakdown.last()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MonthlyTrendsSection(
+    monthlyTrends: List<ReportsViewModel.MonthlyTrend>,
+    cardColor: Color,
+    textColor: Color,
+    mutedTextColor: Color
+) {
+    Column {
+        Text(
+            text = "Xu hướng theo tháng",
+            style = MaterialTheme.typography.titleLarge,
+            color = textColor,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        if (monthlyTrends.isEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = cardColor),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Không có dữ liệu xu hướng",
+                        color = mutedTextColor,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = cardColor),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp)
+                ) {
+                    monthlyTrends.forEach { trend ->
+                        MonthlyTrendItem(
+                            trend = trend,
+                            textColor = textColor,
+                            mutedTextColor = mutedTextColor
+                        )
+                        if (trend != monthlyTrends.last()) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SmartInsightsSection(
+    smartInsights: List<ReportsViewModel.SmartInsight>,
+    cardColor: Color,
+    textColor: Color,
+    mutedTextColor: Color
+) {
+    Column {
+        Text(
+            text = "Thông tin thông minh",
+            style = MaterialTheme.typography.titleLarge,
+            color = textColor,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        if (smartInsights.isEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = cardColor),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Chưa có thông tin thông minh",
+                        color = mutedTextColor,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = cardColor),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp)
+                ) {
+                    smartInsights.forEach { insight ->
+                        SmartInsightItem(
+                            insight = insight,
+                            textColor = textColor,
+                            mutedTextColor = mutedTextColor
+                        )
+                        if (insight != smartInsights.last()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun CategoryReportItem(
-    report: CategoryReport,
+    report: ReportsViewModel.CategoryReport,
     textColor: Color,
     mutedTextColor: Color
 ) {
@@ -378,15 +624,15 @@ fun CategoryReportItem(
             modifier = Modifier
                 .size(40.dp)
                 .background(
-                    color = report.color.copy(alpha = 0.1f),
+                    color = Color(android.graphics.Color.parseColor(report.color)).copy(alpha = 0.1f),
                     shape = RoundedCornerShape(10.dp)
                 ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = report.icon,
-                contentDescription = report.category,
-                tint = report.color,
+                imageVector = getIconFromString(report.icon),
+                contentDescription = report.categoryName,
+                tint = Color(android.graphics.Color.parseColor(report.color)),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -395,13 +641,13 @@ fun CategoryReportItem(
         
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = report.category,
+                text = report.categoryName,
                 style = MaterialTheme.typography.bodyMedium,
                 color = textColor,
                 fontWeight = FontWeight.Medium
             )
             Text(
-                text = "${report.percentage}%",
+                text = "${String.format("%.1f", report.percentage)}%",
                 style = MaterialTheme.typography.bodySmall,
                 color = mutedTextColor
             )
@@ -416,10 +662,9 @@ fun CategoryReportItem(
     }
 }
 
-// Monthly Report Item Component
 @Composable
-fun MonthlyReportItem(
-    report: MonthlyReport,
+fun MonthlyTrendItem(
+    trend: ReportsViewModel.MonthlyTrend,
     textColor: Color,
     mutedTextColor: Color
 ) {
@@ -429,7 +674,7 @@ fun MonthlyReportItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = report.month,
+            text = trend.month,
             style = MaterialTheme.typography.bodyMedium,
             color = textColor,
             fontWeight = FontWeight.Medium
@@ -440,7 +685,7 @@ fun MonthlyReportItem(
         ) {
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "+${formatAmountReports(report.income)}đ",
+                    text = "+${formatAmountReports(trend.income)}đ",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFF10B981),
                     fontWeight = FontWeight.Medium
@@ -454,7 +699,7 @@ fun MonthlyReportItem(
             
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "-${formatAmountReports(report.expense)}đ",
+                    text = "-${formatAmountReports(trend.expense)}đ",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFFEF4444),
                     fontWeight = FontWeight.Medium
@@ -468,7 +713,7 @@ fun MonthlyReportItem(
             
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "${formatAmountReports(report.balance)}đ",
+                    text = "${formatAmountReports(trend.balance)}đ",
                     style = MaterialTheme.typography.bodyMedium,
                     color = textColor,
                     fontWeight = FontWeight.Bold
@@ -483,13 +728,9 @@ fun MonthlyReportItem(
     }
 }
 
-// Insight Item Component
 @Composable
-fun InsightItem(
-    icon: ImageVector,
-    title: String,
-    description: String,
-    color: Color,
+fun SmartInsightItem(
+    insight: ReportsViewModel.SmartInsight,
     textColor: Color,
     mutedTextColor: Color
 ) {
@@ -501,15 +742,15 @@ fun InsightItem(
             modifier = Modifier
                 .size(40.dp)
                 .background(
-                    color = color.copy(alpha = 0.1f),
+                    color = Color(android.graphics.Color.parseColor(insight.color)).copy(alpha = 0.1f),
                     shape = RoundedCornerShape(10.dp)
                 ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = icon,
-                contentDescription = title,
-                tint = color,
+                imageVector = getIconFromString(insight.icon),
+                contentDescription = insight.title,
+                tint = Color(android.graphics.Color.parseColor(insight.color)),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -518,14 +759,14 @@ fun InsightItem(
         
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = title,
+                text = insight.title,
                 style = MaterialTheme.typography.titleMedium,
                 color = textColor,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = description,
+                text = insight.description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = mutedTextColor
             )
@@ -533,9 +774,27 @@ fun InsightItem(
     }
 }
 
-// Helper function
+// Helper functions
 private fun formatAmountReports(amount: Long): String {
     return String.format("%,d", amount)
+}
+
+private fun getIconFromString(iconName: String): ImageVector {
+    return when (iconName.lowercase()) {
+        "restaurant" -> Icons.Default.Restaurant
+        "directions_car" -> Icons.Default.DirectionsCar
+        "shopping_bag" -> Icons.Default.ShoppingBag
+        "movie" -> Icons.Default.Movie
+        "local_hospital" -> Icons.Default.LocalHospital
+        "school" -> Icons.Default.School
+        "flight" -> Icons.Default.Flight
+        "warning" -> Icons.Default.Warning
+        "star" -> Icons.Default.Star
+        "trending_up" -> Icons.Default.TrendingUp
+        "trending_down" -> Icons.Default.TrendingDown
+        "error" -> Icons.Default.Error
+        else -> Icons.Default.Category
+    }
 }
 
 // PREVIEW - Xem giao diện ngay lập tức!

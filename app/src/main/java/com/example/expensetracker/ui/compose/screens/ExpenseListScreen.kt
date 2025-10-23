@@ -17,19 +17,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.expensetracker.data.entity.Expense
+import com.example.expensetracker.ui.viewmodel.ExpenseViewModel
+import com.example.expensetracker.ui.viewmodel.ExpenseState
 import java.text.SimpleDateFormat
 import java.util.*
-
-// Data class cho Expense
-data class Expense(
-    val id: String,
-    val title: String,
-    val amount: Long,
-    val category: String,
-    val date: Date,
-    val note: String = "",
-    val isExpense: Boolean = true
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,28 +30,41 @@ fun ExpenseListScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAddExpense: () -> Unit = {},
     onNavigateToEditExpense: (String) -> Unit = {},
-    isDarkTheme: Boolean = true
+    isDarkTheme: Boolean = true,
+    expenseViewModel: ExpenseViewModel = hiltViewModel()
 ) {
     val backgroundColor = if (isDarkTheme) Color(0xFF0F0F0F) else Color(0xFFFAFAFA)
     val cardColor = if (isDarkTheme) Color(0xFF1F2937) else Color.White
     val textColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
     val mutedTextColor = if (isDarkTheme) Color(0xFF9CA3AF) else Color(0xFF6B7280)
     
-    // Sample data - sau này sẽ lấy từ database
-    val sampleExpenses = remember {
-        listOf(
-            Expense("1", "Cà phê", 25000, "Ăn uống", Date(), "Cà phê sáng"),
-            Expense("2", "Xăng xe", 150000, "Giao thông", Date(), "Đổ xăng"),
-            Expense("3", "Ăn trưa", 80000, "Ăn uống", Date(), "Cơm trưa"),
-            Expense("4", "Mua sắm", 200000, "Mua sắm", Date(), "Quần áo"),
-            Expense("5", "Lương", 5000000, "Thu nhập", Date(), "Lương tháng", false)
-        )
+    // Collect states from ViewModel
+    val expenseState by expenseViewModel.expenseState.collectAsState()
+    val isLoading by expenseViewModel.isLoading.collectAsState()
+    val errorMessage by expenseViewModel.errorMessage.collectAsState()
+    val expenses by expenseViewModel.expenses.collectAsState()
+    val searchQuery by expenseViewModel.searchQuery.collectAsState()
+    val selectedCategory by expenseViewModel.selectedCategory.collectAsState()
+    
+    // Local state for search input
+    var searchInput by remember { mutableStateOf("") }
+    
+    // Load expenses when screen is first displayed
+    LaunchedEffect(Unit) {
+        expenseViewModel.loadExpenses()
     }
     
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf("Tất cả") }
+    // Clear error when search input changes
+    LaunchedEffect(searchInput) {
+        if (errorMessage != null) {
+            expenseViewModel.clearError()
+        }
+    }
     
     val categories = listOf("Tất cả", "Ăn uống", "Giao thông", "Mua sắm", "Thu nhập", "Khác")
+    
+    // Get filtered expenses
+    val filteredExpenses = expenseViewModel.getFilteredExpenses()
     
     Box(
         modifier = Modifier
@@ -106,8 +112,11 @@ fun ExpenseListScreen(
                     
                     // Search bar
                     OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
+                        value = searchInput,
+                        onValueChange = { 
+                            searchInput = it
+                            expenseViewModel.searchExpenses(it)
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("Tìm kiếm chi tiêu...", color = mutedTextColor) },
                         leadingIcon = {
@@ -118,8 +127,11 @@ fun ExpenseListScreen(
                             )
                         },
                         trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(onClick = { searchQuery = "" }) {
+                            if (searchInput.isNotEmpty()) {
+                                IconButton(onClick = { 
+                                    searchInput = ""
+                                    expenseViewModel.searchExpenses("")
+                                }) {
                                     Icon(
                                         imageVector = Icons.Default.Clear,
                                         contentDescription = "Xóa",
@@ -150,7 +162,9 @@ fun ExpenseListScreen(
                             ) {
                                 categories.forEach { category ->
                                     FilterChip(
-                                        onClick = { selectedCategory = category },
+                                        onClick = { 
+                                            expenseViewModel.filterByCategory(category)
+                                        },
                                         label = { Text(category, color = if (selectedCategory == category) Color.White else textColor) },
                                         selected = selectedCategory == category,
                                         colors = FilterChipDefaults.filterChipColors(
@@ -165,53 +179,102 @@ fun ExpenseListScreen(
                 }
             }
             
-            // Danh sách chi tiêu
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                val filteredExpenses = sampleExpenses.filter { expense ->
-                    val matchesSearch = expense.title.contains(searchQuery, ignoreCase = true) ||
-                                      expense.note.contains(searchQuery, ignoreCase = true)
-                    val matchesCategory = selectedCategory == "Tất cả" || expense.category == selectedCategory
-                    matchesSearch && matchesCategory
-                }
-                
-                if (filteredExpenses.isEmpty()) {
-                    item {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(40.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+            // Error message
+            if (errorMessage != null) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEF4444).copy(alpha = 0.1f)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = "Lỗi",
+                            tint = Color(0xFFEF4444),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = errorMessage!!,
+                            color = Color(0xFFEF4444),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        IconButton(
+                            onClick = { expenseViewModel.clearError() },
+                            modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Receipt,
-                                contentDescription = null,
-                                tint = mutedTextColor,
-                                modifier = Modifier.size(64.dp)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                                text = if (searchQuery.isNotEmpty() || selectedCategory != "Tất cả") 
-                                    "Không tìm thấy chi tiêu nào" 
-                                else "Chưa có chi tiêu nào",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = mutedTextColor
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Đóng",
+                                tint = Color(0xFFEF4444),
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     }
-                } else {
-                    items(filteredExpenses) { expense ->
-                        ExpenseItem(
-                            expense = expense,
-                            cardColor = cardColor,
-                            textColor = textColor,
-                            mutedTextColor = mutedTextColor,
-                            onClick = { onNavigateToEditExpense(expense.id) }
-                        )
+                }
+            }
+            
+            // Loading indicator
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = Color(0xFF10B981),
+                        modifier = Modifier.size(48.dp)
+                    )
+                }
+            } else {
+                // Danh sách chi tiêu
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (filteredExpenses.isEmpty()) {
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(40.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Receipt,
+                                    contentDescription = null,
+                                    tint = mutedTextColor,
+                                    modifier = Modifier.size(64.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = when {
+                                        searchInput.isNotEmpty() -> "Không tìm thấy chi tiêu nào"
+                                        selectedCategory != "Tất cả" -> "Không có chi tiêu trong danh mục này"
+                                        else -> "Chưa có chi tiêu nào"
+                                    },
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = mutedTextColor
+                                )
+                            }
+                        }
+                    } else {
+                        items(filteredExpenses) { expense ->
+                            ExpenseItem(
+                                expense = expense,
+                                cardColor = cardColor,
+                                textColor = textColor,
+                                mutedTextColor = mutedTextColor,
+                                onClick = { onNavigateToEditExpense(expense.id) }
+                            )
+                        }
                     }
                 }
             }
@@ -375,10 +438,11 @@ fun ExpenseItemPreview() {
         expense = Expense(
             id = "1",
             title = "Cà phê",
-            amount = 25000,
+            amount = 25000L,
             category = "Ăn uống",
             date = Date(),
-            note = "Cà phê sáng"
+            note = "Cà phê sáng",
+            isExpense = true
         ),
         cardColor = Color(0xFF1F2937),
         textColor = Color.White,

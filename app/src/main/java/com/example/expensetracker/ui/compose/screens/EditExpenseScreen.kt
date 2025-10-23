@@ -20,10 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.expensetracker.data.entity.Expense
+import com.example.expensetracker.ui.viewmodel.ExpenseViewModel
+import com.example.expensetracker.ui.viewmodel.CategoryViewModel
+import com.example.expensetracker.ui.viewmodel.CrudState
 import java.text.SimpleDateFormat
 import java.util.*
-
-// Category data class is already defined in AddExpenseScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,40 +35,60 @@ fun EditExpenseScreen(
     onNavigateBack: () -> Unit,
     onUpdateExpense: (Expense) -> Unit = {},
     onDeleteExpense: (String) -> Unit = {},
-    isDarkTheme: Boolean = true
+    isDarkTheme: Boolean = true,
+    expenseViewModel: ExpenseViewModel = hiltViewModel(),
+    categoryViewModel: CategoryViewModel = hiltViewModel()
 ) {
     val backgroundColor = if (isDarkTheme) Color(0xFF0F0F0F) else Color(0xFFFAFAFA)
     val cardColor = if (isDarkTheme) Color(0xFF1F2937) else Color.White
     val textColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
     val mutedTextColor = if (isDarkTheme) Color(0xFF9CA3AF) else Color(0xFF6B7280)
     
+    // Collect states from ViewModels
+    val isLoading by expenseViewModel.isLoading.collectAsState()
+    val errorMessage by expenseViewModel.errorMessage.collectAsState()
+    val crudState by expenseViewModel.crudState.collectAsState()
+    val categories by categoryViewModel.categories.collectAsState()
+    val isLoadingCategories by categoryViewModel.isLoading.collectAsState()
+    val categoryErrorMessage by categoryViewModel.errorMessage.collectAsState()
+    
     // Form state - pre-filled with expense data
     var title by remember { mutableStateOf(expense.title) }
     var amount by remember { mutableStateOf(expense.amount.toString()) }
     var note by remember { mutableStateOf(expense.note) }
-    var selectedCategory by remember { mutableStateOf<Category?>(null) }
+    var selectedCategory by remember { mutableStateOf<com.example.expensetracker.data.entity.Category?>(null) }
     var selectedDate by remember { mutableStateOf(expense.date) }
     var isExpense by remember { mutableStateOf(expense.isExpense) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     
-    // Categories
-    val categories = remember {
-        listOf(
-            Category("food", "Ăn uống", Icons.Default.Restaurant, Color(0xFFF59E0B)),
-            Category("transport", "Giao thông", Icons.Default.DirectionsCar, Color(0xFF3B82F6)),
-            Category("shopping", "Mua sắm", Icons.Default.ShoppingBag, Color(0xFF8B5CF6)),
-            Category("entertainment", "Giải trí", Icons.Default.Movie, Color(0xFFEC4899)),
-            Category("health", "Sức khỏe", Icons.Default.LocalHospital, Color(0xFF10B981)),
-            Category("education", "Giáo dục", Icons.Default.School, Color(0xFF06B6D4)),
-            Category("income", "Thu nhập", Icons.Default.AccountBalanceWallet, Color(0xFF10B981)),
-            Category("other", "Khác", Icons.Default.Category, Color(0xFF6B7280))
-        )
+    // Load categories when screen is first displayed
+    LaunchedEffect(Unit) {
+        categoryViewModel.loadCategories()
     }
     
     // Initialize selected category
-    LaunchedEffect(expense.category) {
-        selectedCategory = categories.find { it.name == expense.category }
+    LaunchedEffect(expense.category, categories) {
+        if (categories.isNotEmpty()) {
+            selectedCategory = categories.find { it.name == expense.category }
+        }
+    }
+    
+    // Handle successful operations
+    LaunchedEffect(crudState) {
+        when (crudState) {
+            is CrudState.Success -> {
+                onNavigateBack()
+            }
+            else -> { /* No-op */ }
+        }
+    }
+    
+    // Clear error when form fields change
+    LaunchedEffect(title, amount, note) {
+        if (errorMessage != null) {
+            expenseViewModel.clearError()
+        }
     }
     
     // Validation
@@ -183,6 +206,44 @@ fun EditExpenseScreen(
             modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            // Error message
+            if (errorMessage != null) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEF4444).copy(alpha = 0.1f)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = "Lỗi",
+                            tint = Color(0xFFEF4444),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = errorMessage!!,
+                            color = Color(0xFFEF4444),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        IconButton(
+                            onClick = { expenseViewModel.clearError() },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Đóng",
+                                tint = Color(0xFFEF4444),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+            }
             // Title Input
             OutlinedTextField(
                 value = title,
@@ -245,16 +306,78 @@ fun EditExpenseScreen(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(categories) { category ->
-                        CategoryChip(
-                            category = category,
-                            isSelected = selectedCategory?.id == category.id,
-                            onClick = { selectedCategory = category },
-                            textColor = textColor
-                        )
+                when {
+                    isLoadingCategories -> {
+                        // Hiển thị loading spinner
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(80.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = Color(0xFF10B981),
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                    categoryErrorMessage != null -> {
+                        // Hiển thị error message với retry button
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(80.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Lỗi: ${categoryErrorMessage}",
+                                    color = Color.Red,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                TextButton(
+                                    onClick = { categoryViewModel.loadCategories() }
+                                ) {
+                                    Text(
+                                        text = "Thử lại",
+                                        color = Color(0xFF10B981)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    categories.isEmpty() -> {
+                        // Hiển thị thông báo không có danh mục
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(80.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Không có danh mục nào",
+                                color = mutedTextColor,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                    else -> {
+                        // Hiển thị danh sách categories
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(categories) { category ->
+                                CategoryChip(
+                                    category = category,
+                                    isSelected = selectedCategory?.id == category.id,
+                                    onClick = { selectedCategory = category },
+                                    textColor = textColor
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -371,14 +494,13 @@ fun EditExpenseScreen(
                                 note = note,
                                 isExpense = isExpense
                             )
-                            onUpdateExpense(updatedExpense)
-                            onNavigateBack()
+                            expenseViewModel.updateExpense(updatedExpense)
                         }
                     },
                     modifier = Modifier
                         .weight(1f)
                         .height(56.dp),
-                    enabled = isFormValid,
+                    enabled = isFormValid && !isLoading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF10B981),
                         contentColor = Color.White,
@@ -387,20 +509,27 @@ fun EditExpenseScreen(
                     ),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = "Cập nhật",
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
                             modifier = Modifier.size(20.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Cập nhật",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                    } else {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Save,
+                                contentDescription = "Cập nhật",
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Cập nhật",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -441,8 +570,7 @@ fun EditExpenseScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        onDeleteExpense(expense.id)
-                        onNavigateBack()
+                        expenseViewModel.deleteExpense(expense.id)
                     }
                 ) {
                     Text("Xóa", color = Color(0xFFEF4444))

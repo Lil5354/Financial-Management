@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.sp
 fun WelcomeScreen(
     onNavigateToSignIn: () -> Unit,
     onNavigateToSignUp: () -> Unit,
-    onSkip: () -> Unit,
     isDarkTheme: Boolean
 ) {
     val cardColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White
@@ -53,24 +52,6 @@ fun WelcomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Top section with skip button
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(
-                    onClick = onSkip,
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = mutedTextColor
-                    )
-                ) {
-                    Text(
-                        text = "Bỏ qua",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-            
             // Main content
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -257,7 +238,6 @@ fun WelcomeScreenPreview() {
         WelcomeScreen(
             onNavigateToSignIn = {},
             onNavigateToSignUp = {},
-            onSkip = {},
             isDarkTheme = false
         )
     }

@@ -19,13 +19,17 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.expensetracker.ui.viewmodel.AuthViewModel
+import com.example.expensetracker.ui.viewmodel.AuthState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
     onNavigateToSignIn: () -> Unit,
     onSignUpSuccess: () -> Unit,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -33,16 +37,39 @@ fun SignUpScreen(
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-    var showError by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
     var acceptTerms by remember { mutableStateOf(false) }
+    
+    val authState by authViewModel.authState.collectAsState()
+    val isLoading by authViewModel.isLoading.collectAsState()
+    val errorMessage by authViewModel.errorMessage.collectAsState()
     
     val cardColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDarkTheme) Color.White else Color.Black
     val mutedTextColor = if (isDarkTheme) Color(0xFFB0B0B0) else Color(0xFF666666)
     val primaryColor = Color(0xFF10B981)
     val errorColor = Color(0xFFEF4444)
+    
+    // Xử lý authentication state
+    LaunchedEffect(authState) {
+        when (authState) {
+            is AuthState.Success -> {
+                onSignUpSuccess()
+            }
+            is AuthState.Error -> {
+                // Error sẽ được hiển thị qua errorMessage
+            }
+            else -> {
+                // Không cần xử lý gì
+            }
+        }
+    }
+    
+    // Xóa error message khi user nhập liệu
+    LaunchedEffect(fullName, email, password, confirmPassword) {
+        if (errorMessage != null) {
+            authViewModel.clearError()
+        }
+    }
     
     Box(
         modifier = Modifier
@@ -254,7 +281,7 @@ fun SignUpScreen(
                     }
                     
                     // Error Message
-                    if (showError) {
+                    if (errorMessage != null) {
                         Card(
                             colors = CardDefaults.cardColors(containerColor = errorColor.copy(alpha = 0.1f)),
                             shape = RoundedCornerShape(8.dp)
@@ -271,7 +298,7 @@ fun SignUpScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = errorMessage,
+                                    text = errorMessage!!,
                                     color = errorColor,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
@@ -282,30 +309,13 @@ fun SignUpScreen(
                     // Sign Up Button
                     Button(
                         onClick = {
-                            when {
-                                fullName.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank() -> {
-                                    showError = true
-                                    errorMessage = "Vui lòng nhập đầy đủ thông tin"
-                                }
-                                password.length < 6 -> {
-                                    showError = true
-                                    errorMessage = "Mật khẩu phải có ít nhất 6 ký tự"
-                                }
-                                password != confirmPassword -> {
-                                    showError = true
-                                    errorMessage = "Mật khẩu xác nhận không khớp"
-                                }
-                                !acceptTerms -> {
-                                    showError = true
-                                    errorMessage = "Vui lòng đồng ý với điều khoản sử dụng"
-                                }
-                                else -> {
-                                    isLoading = true
-                                    showError = false
-                                    // TODO: Implement actual sign up logic
-                                    onSignUpSuccess()
-                                }
-                            }
+                            authViewModel.signUp(
+                                email = email,
+                                password = password,
+                                fullName = fullName,
+                                confirmPassword = confirmPassword,
+                                acceptTerms = acceptTerms
+                            )
                         },
                         modifier = Modifier
                             .fillMaxWidth()

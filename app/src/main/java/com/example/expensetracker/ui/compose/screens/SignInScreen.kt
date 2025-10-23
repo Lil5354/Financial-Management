@@ -19,6 +19,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.expensetracker.ui.viewmodel.AuthViewModel
+import com.example.expensetracker.ui.viewmodel.AuthState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,20 +29,44 @@ fun SignInScreen(
     onNavigateToSignUp: () -> Unit,
     onNavigateToForgotPassword: () -> Unit,
     onSignInSuccess: () -> Unit,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-    var showError by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
+    
+    val authState by authViewModel.authState.collectAsState()
+    val isLoading by authViewModel.isLoading.collectAsState()
+    val errorMessage by authViewModel.errorMessage.collectAsState()
     
     val cardColor = if (isDarkTheme) Color(0xFF1E1E1E) else Color.White
     val textColor = if (isDarkTheme) Color.White else Color.Black
     val mutedTextColor = if (isDarkTheme) Color(0xFFB0B0B0) else Color(0xFF666666)
     val primaryColor = Color(0xFF10B981)
     val errorColor = Color(0xFFEF4444)
+    
+    // Xử lý authentication state
+    LaunchedEffect(authState) {
+        when (authState) {
+            is AuthState.Success -> {
+                onSignInSuccess()
+            }
+            is AuthState.Error -> {
+                // Error sẽ được hiển thị qua errorMessage
+            }
+            else -> {
+                // Không cần xử lý gì
+            }
+        }
+    }
+    
+    // Xóa error message khi user nhập liệu
+    LaunchedEffect(email, password) {
+        if (errorMessage != null) {
+            authViewModel.clearError()
+        }
+    }
     
     Box(
         modifier = Modifier
@@ -184,7 +211,7 @@ fun SignInScreen(
                     }
                     
                     // Error Message
-                    if (showError) {
+                    if (errorMessage != null) {
                         Card(
                             colors = CardDefaults.cardColors(containerColor = errorColor.copy(alpha = 0.1f)),
                             shape = RoundedCornerShape(8.dp)
@@ -201,7 +228,7 @@ fun SignInScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = errorMessage,
+                                    text = errorMessage!!,
                                     color = errorColor,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
@@ -212,15 +239,7 @@ fun SignInScreen(
                     // Sign In Button
                     Button(
                         onClick = {
-                            if (email.isBlank() || password.isBlank()) {
-                                showError = true
-                                errorMessage = "Vui lòng nhập đầy đủ thông tin"
-                            } else {
-                                isLoading = true
-                                showError = false
-                                // TODO: Implement actual sign in logic
-                                onSignInSuccess()
-                            }
+                            authViewModel.signIn(email, password)
                         },
                         modifier = Modifier
                             .fillMaxWidth()

@@ -1,6 +1,7 @@
 package com.example.expensetracker
 
 import android.app.Application
+import com.google.firebase.FirebaseApp
 import dagger.hilt.android.HiltAndroidApp
 
 /**
@@ -12,6 +13,7 @@ class ExpenseTrackerApplication : Application() {
     
     override fun onCreate() {
         super.onCreate()
-        // Khởi tạo các service global nếu cần
+        // Khởi tạo Firebase
+        FirebaseApp.initializeApp(this)
     }
 }
