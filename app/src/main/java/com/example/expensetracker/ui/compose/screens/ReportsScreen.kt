@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.example.expensetracker.ui.viewmodel.ReportsViewModel
 import com.example.expensetracker.ui.viewmodel.ReportsState
 
@@ -47,6 +49,22 @@ fun ReportsScreen(
         viewModel.loadReportsData(selectedPeriod)
     }
     
+    // Refresh data khi screen được focus lại (navigate back)
+    // Sử dụng một key duy nhất để tránh vòng lặp vô hạn
+    var refreshTrigger by remember { mutableStateOf(0) }
+    
+    LaunchedEffect(refreshTrigger) {
+        if (refreshTrigger > 0) {
+            viewModel.refreshData()
+        }
+    }
+    
+    // Tăng refreshTrigger khi screen được focus lại
+    DisposableEffect(Unit) {
+        refreshTrigger++
+        onDispose { }
+    }
+    
     when (val state = reportsState) {
         is ReportsState.Loading -> {
             LoadingScreen(isDarkTheme = isDarkTheme)
@@ -70,6 +88,7 @@ fun ReportsScreen(
                     viewModel.loadReportsData(period) 
                 },
                 onNavigateBack = onNavigateBack,
+                onRefresh = { viewModel.refreshData() },
                 isDarkTheme = isDarkTheme
             )
         }
@@ -176,6 +195,7 @@ fun ReportsContent(
     isLoading: Boolean,
     onPeriodChange: (ReportsViewModel.ReportPeriod) -> Unit,
     onNavigateBack: () -> Unit,
+    onRefresh: () -> Unit,
     isDarkTheme: Boolean = true
 ) {
     val backgroundColor = if (isDarkTheme) Color(0xFF0F0F0F) else Color(0xFFFAFAFA)
@@ -194,6 +214,7 @@ fun ReportsContent(
         item {
             ReportsHeader(
                 onNavigateBack = onNavigateBack,
+                onRefresh = onRefresh,
                 textColor = textColor
             )
         }
@@ -310,6 +331,7 @@ fun SummaryCard(
 @Composable
 fun ReportsHeader(
     onNavigateBack: () -> Unit,
+    onRefresh: () -> Unit,
     textColor: Color
 ) {
     Row(
@@ -332,8 +354,20 @@ fun ReportsHeader(
             text = "Báo cáo & Thống kê",
             style = MaterialTheme.typography.headlineSmall,
             color = textColor,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
         )
+        IconButton(
+            onClick = onRefresh,
+            modifier = Modifier.size(40.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = "Làm mới",
+                tint = textColor,
+                modifier = Modifier.size(24.dp)
+            )
+        }
     }
 }
 

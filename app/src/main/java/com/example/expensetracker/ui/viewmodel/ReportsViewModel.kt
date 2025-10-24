@@ -115,6 +115,16 @@ class ReportsViewModel @Inject constructor(
                     dateRange.second
                 ).getOrThrow()
                 
+                // Debug: Log số lượng expenses
+                android.util.Log.d("ReportsViewModel", "Found ${expenses.size} expenses for period ${period.displayName}")
+                val formatter = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault())
+                android.util.Log.d("ReportsViewModel", "Date range: ${formatter.format(dateRange.first)} to ${formatter.format(dateRange.second)}")
+                
+                // Log chi tiết expenses
+                expenses.forEach { expense ->
+                    android.util.Log.d("ReportsViewModel", "Expense: ${expense.title} - ${expense.amount} - ${expense.category} - ${expense.isExpense} - ${formatter.format(expense.date)}")
+                }
+                
                 // Tính toán các metrics
                 calculateSummaryData(expenses, period)
                 calculateCategoryBreakdown(expenses)
@@ -138,6 +148,8 @@ class ReportsViewModel @Inject constructor(
         val income = expenses.filter { !it.isExpense }.sumOf { it.amount }
         val expense = expenses.filter { it.isExpense }.sumOf { it.amount }
         val balance = income - expense
+        
+        android.util.Log.d("ReportsViewModel", "Summary for ${period.displayName}: Income=$income, Expense=$expense, Balance=$balance")
         
         _summaryData.value = SummaryData(income, expense, balance, period)
     }
@@ -174,39 +186,46 @@ class ReportsViewModel @Inject constructor(
     /**
      * Tính toán xu hướng theo tháng
      */
-    private fun calculateMonthlyTrends(period: ReportPeriod) {
-        viewModelScope.launch {
-            try {
-                val months = getMonthsForPeriod(period)
-                val trends = mutableListOf<MonthlyTrend>()
+    private suspend fun calculateMonthlyTrends(period: ReportPeriod) {
+        try {
+            val months = getMonthsForPeriod(period)
+            android.util.Log.d("ReportsViewModel", "Months for ${period.displayName}: $months")
+            
+            val trends = mutableListOf<MonthlyTrend>()
+            
+            for (month in months) {
+                val monthRange = getMonthDateRange(month.first, month.second)
+                val formatter = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault())
+                android.util.Log.d("ReportsViewModel", "Month ${month.first}/${month.second}: ${formatter.format(monthRange.first)} to ${formatter.format(monthRange.second)}")
                 
-                for (month in months) {
-                    val monthRange = getMonthDateRange(month.first, month.second)
-                    val expenses = firebaseRepository.getExpensesByDateRange(
-                        monthRange.first, 
-                        monthRange.second
-                    ).getOrThrow()
-                    
-                    val income = expenses.filter { !it.isExpense }.sumOf { it.amount }
-                    val expense = expenses.filter { it.isExpense }.sumOf { it.amount }
-                    val balance = income - expense
-                    
-                    trends.add(
-                        MonthlyTrend(
-                            month = getMonthName(month.second),
-                            year = month.second,
-                            income = income,
-                            expense = expense,
-                            balance = balance
-                        )
+                val expenses = firebaseRepository.getExpensesByDateRange(
+                    monthRange.first, 
+                    monthRange.second
+                ).getOrThrow()
+                
+                android.util.Log.d("ReportsViewModel", "Found ${expenses.size} expenses for month ${month.first}/${month.second}")
+                
+                val income = expenses.filter { !it.isExpense }.sumOf { it.amount }
+                val expense = expenses.filter { it.isExpense }.sumOf { it.amount }
+                val balance = income - expense
+                
+                android.util.Log.d("ReportsViewModel", "Month ${month.first}/${month.second} - Income: $income, Expense: $expense, Balance: $balance")
+                
+                trends.add(
+                    MonthlyTrend(
+                        month = getMonthName(month.first),
+                        year = month.second,
+                        income = income,
+                        expense = expense,
+                        balance = balance
                     )
-                }
-                
-                _monthlyTrends.value = trends
-            } catch (e: Exception) {
-                // Handle error silently for trends
-                _monthlyTrends.value = emptyList()
+                )
             }
+            
+            _monthlyTrends.value = trends
+        } catch (e: Exception) {
+            android.util.Log.e("ReportsViewModel", "Error calculating monthly trends", e)
+            _monthlyTrends.value = emptyList()
         }
     }
     
@@ -293,12 +312,112 @@ class ReportsViewModel @Inject constructor(
      */
     private fun getDateRangeForPeriod(period: ReportPeriod): Pair<Date, Date> {
         val calendar = Calendar.getInstance()
-        val endDate = calendar.time
         
-        calendar.add(Calendar.DAY_OF_YEAR, -period.days)
-        val startDate = calendar.time
-        
-        return Pair(startDate, endDate)
+        when (period) {
+            ReportPeriod.THIS_WEEK -> {
+                // Tuần này: từ đầu tuần (thứ 2) đến cuối tuần (chủ nhật)
+                calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                val startDate = calendar.time
+                
+                calendar.add(Calendar.DAY_OF_WEEK, 6) // Chủ nhật
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                calendar.set(Calendar.MILLISECOND, 999)
+                val endDate = calendar.time
+                
+                return Pair(startDate, endDate)
+            }
+            ReportPeriod.THIS_MONTH -> {
+                // Tháng này: từ đầu tháng đến cuối tháng
+                calendar.set(Calendar.DAY_OF_MONTH, 1)
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                val startDate = calendar.time
+                
+                calendar.add(Calendar.MONTH, 1)
+                calendar.add(Calendar.DAY_OF_MONTH, -1)
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                calendar.set(Calendar.MILLISECOND, 999)
+                val endDate = calendar.time
+                
+                return Pair(startDate, endDate)
+            }
+            ReportPeriod.THREE_MONTHS -> {
+                // 3 tháng gần nhất: từ đầu tháng của 3 tháng trước đến cuối tháng trước
+                calendar.add(Calendar.MONTH, -3)
+                calendar.set(Calendar.DAY_OF_MONTH, 1)
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                val startDate = calendar.time
+                
+                // Set về cuối tháng trước (không bao gồm tháng hiện tại)
+                calendar.setTime(Date())
+                calendar.add(Calendar.MONTH, -1) // Lùi về tháng trước
+                // Đặt ngày thành ngày cuối cùng của tháng đó
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                calendar.set(Calendar.MILLISECOND, 999)
+                val endDate = calendar.time
+                
+                return Pair(startDate, endDate)
+            }
+            ReportPeriod.SIX_MONTHS -> {
+                // 6 tháng gần nhất: từ đầu tháng của 6 tháng trước đến cuối tháng trước
+                calendar.add(Calendar.MONTH, -6)
+                calendar.set(Calendar.DAY_OF_MONTH, 1)
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                val startDate = calendar.time
+                
+                // Set về cuối tháng trước (không bao gồm tháng hiện tại)
+                calendar.setTime(Date())
+                calendar.add(Calendar.MONTH, -1) // Lùi về tháng trước
+                // Đặt ngày thành ngày cuối cùng của tháng đó
+                calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                calendar.set(Calendar.MILLISECOND, 999)
+                val endDate = calendar.time
+                
+                return Pair(startDate, endDate)
+            }
+            ReportPeriod.THIS_YEAR -> {
+                // Năm nay: từ đầu năm đến cuối năm
+                calendar.set(Calendar.MONTH, 0) // Tháng 1
+                calendar.set(Calendar.DAY_OF_MONTH, 1)
+                calendar.set(Calendar.HOUR_OF_DAY, 0)
+                calendar.set(Calendar.MINUTE, 0)
+                calendar.set(Calendar.SECOND, 0)
+                calendar.set(Calendar.MILLISECOND, 0)
+                val startDate = calendar.time
+                
+                calendar.set(Calendar.MONTH, 11) // Tháng 12
+                calendar.set(Calendar.DAY_OF_MONTH, 31)
+                calendar.set(Calendar.HOUR_OF_DAY, 23)
+                calendar.set(Calendar.MINUTE, 59)
+                calendar.set(Calendar.SECOND, 59)
+                calendar.set(Calendar.MILLISECOND, 999)
+                val endDate = calendar.time
+                
+                return Pair(startDate, endDate)
+            }
+        }
     }
     
     /**
@@ -318,17 +437,19 @@ class ReportsViewModel @Inject constructor(
                 months.add(Pair(calendar.get(Calendar.MONTH), calendar.get(Calendar.YEAR)))
             }
             ReportPeriod.THREE_MONTHS -> {
-                // 3 tháng gần nhất
+                // 3 tháng: từ 3 tháng trước đến tháng trước (không bao gồm tháng hiện tại)
+                calendar.add(Calendar.MONTH, -3) // Lùi về 3 tháng trước
                 for (i in 0..2) {
                     months.add(Pair(calendar.get(Calendar.MONTH), calendar.get(Calendar.YEAR)))
-                    calendar.add(Calendar.MONTH, -1)
+                    calendar.add(Calendar.MONTH, 1) // Tiến lên
                 }
             }
             ReportPeriod.SIX_MONTHS -> {
-                // 6 tháng gần nhất
+                // 6 tháng: từ 6 tháng trước đến tháng trước (không bao gồm tháng hiện tại)
+                calendar.add(Calendar.MONTH, -6) // Lùi về 6 tháng trước
                 for (i in 0..5) {
                     months.add(Pair(calendar.get(Calendar.MONTH), calendar.get(Calendar.YEAR)))
-                    calendar.add(Calendar.MONTH, -1)
+                    calendar.add(Calendar.MONTH, 1) // Tiến lên
                 }
             }
             ReportPeriod.THIS_YEAR -> {
@@ -341,7 +462,7 @@ class ReportsViewModel @Inject constructor(
             }
         }
         
-        return months.reversed() // Sắp xếp từ cũ đến mới
+        return months // Không cần reversed() nữa vì đã tính đúng thứ tự
     }
     
     /**
@@ -428,10 +549,76 @@ class ReportsViewModel @Inject constructor(
     }
     
     /**
-     * Refresh data
+     * Refresh data - gọi lại loadReportsData với period hiện tại
      */
     fun refreshData() {
         loadReportsData(_selectedPeriod.value)
+    }
+    
+    /**
+     * Debug method để kiểm tra khoảng thời gian
+     */
+    fun debugDateRange(period: ReportPeriod): String {
+        val dateRange = getDateRangeForPeriod(period)
+        val formatter = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault())
+        return "Period: ${period.displayName}\nStart: ${formatter.format(dateRange.first)}\nEnd: ${formatter.format(dateRange.second)}"
+    }
+    
+    /**
+     * Debug method để test tất cả các period
+     */
+    fun debugAllPeriods(): String {
+        val result = StringBuilder()
+        ReportPeriod.values().forEach { period ->
+            result.append(debugDateRange(period))
+            result.append("\nMonths: ${getMonthsForPeriod(period)}")
+            result.append("\n---\n")
+        }
+        return result.toString()
+    }
+    
+    /**
+     * Debug method để test logic tính toán
+     */
+    fun debugPeriodLogic(): String {
+        val result = StringBuilder()
+        val currentDate = Date()
+        val formatter = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+        
+        result.append("Current Date: ${formatter.format(currentDate)}\n\n")
+        
+        ReportPeriod.values().forEach { period ->
+            val dateRange = getDateRangeForPeriod(period)
+            val months = getMonthsForPeriod(period)
+            
+            result.append("=== ${period.displayName} ===\n")
+            result.append("Date Range: ${formatter.format(dateRange.first)} to ${formatter.format(dateRange.second)}\n")
+            result.append("Months: $months\n")
+            result.append("\n")
+        }
+        
+        return result.toString()
+    }
+    
+    /**
+     * Force refresh data - reset state và load lại
+     */
+    fun forceRefreshData() {
+        _reportsState.value = ReportsState.Loading
+        _summaryData.value = null
+        _categoryBreakdown.value = emptyList()
+        _monthlyTrends.value = emptyList()
+        _smartInsights.value = emptyList()
+        loadReportsData(_selectedPeriod.value)
+    }
+    
+    /**
+     * Debug refresh - load data với debug info
+     */
+    fun debugRefreshData() {
+        android.util.Log.d("ReportsViewModel", "=== DEBUG REFRESH ===")
+        android.util.Log.d("ReportsViewModel", debugDateRange(_selectedPeriod.value))
+        forceRefreshData()
     }
 }
 
