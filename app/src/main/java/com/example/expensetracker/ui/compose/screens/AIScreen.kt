@@ -1,7 +1,11 @@
 package com.example.expensetracker.ui.compose.screens
 
+import android.Manifest
+import android.widget.Toast
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,12 +16,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.expensetracker.ui.viewmodel.ChatViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -52,7 +66,8 @@ data class ChatMessage(
 @Composable
 fun AIScreen(
     onNavigateBack: () -> Unit,
-    isDarkTheme: Boolean = true
+    isDarkTheme: Boolean = true,
+    chatViewModel: ChatViewModel = hiltViewModel()
 ) {
     val backgroundColor = if (isDarkTheme) Color(0xFF0A0A0A) else Color(0xFFF8FAFC)
     val cardColor = if (isDarkTheme) Color(0xFF1E293B) else Color.White
@@ -228,7 +243,7 @@ fun AIScreen(
         
         // Content based on selected tab
         when (selectedTab) {
-            0 -> AIAssistantContent(aiInsights, cardColor, textColor, mutedTextColor, accentColor, successColor, warningColor, errorColor)
+            0 -> AIAssistantContent(aiInsights, cardColor, textColor, mutedTextColor, accentColor, successColor, warningColor, errorColor, chatViewModel)
             1 -> OCRContent(cardColor, textColor, mutedTextColor, accentColor)
             2 -> ForecastingContent(cardColor, textColor, mutedTextColor, accentColor, successColor, warningColor)
             3 -> ChatScreen(isDarkTheme)
@@ -246,7 +261,8 @@ fun AIAssistantContent(
     accentColor: Color,
     successColor: Color,
     warningColor: Color,
-    errorColor: Color
+    errorColor: Color,
+    chatViewModel: ChatViewModel
 ) {
     LazyColumn(
         modifier = Modifier
@@ -315,34 +331,14 @@ fun AIAssistantContent(
         }
         
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    QuickActionCard(
-                        title = "Thêm chi tiêu",
-                        subtitle = "Bằng giọng nói",
-                        icon = Icons.Default.Mic,
-                        color = successColor,
-                        cardColor = cardColor,
-                        textColor = textColor,
-                        onClick = { /* TODO: Voice input */ }
-                    )
-                }
-                
-                Box(modifier = Modifier.weight(1f)) {
-                    QuickActionCard(
-                        title = "Scan hóa đơn",
-                        subtitle = "Tự động nhận diện",
-                        icon = Icons.Default.CameraAlt,
-                        color = accentColor,
-                        cardColor = cardColor,
-                        textColor = textColor,
-                        onClick = { /* TODO: OCR */ }
-                    )
-                }
-            }
+            VoiceRecordingCard(
+                chatViewModel = chatViewModel,
+                cardColor = cardColor,
+                textColor = textColor,
+                mutedTextColor = mutedTextColor,
+                successColor = successColor,
+                errorColor = errorColor
+            )
         }
         
         // AI Insights
@@ -496,7 +492,7 @@ fun OCRContent(
     }
 }
 
-// Forecasting Content - Modern Design
+// Forecasting Content - Coming Soon Design
 @Composable
 fun ForecastingContent(
     cardColor: Color,
@@ -506,136 +502,173 @@ fun ForecastingContent(
     successColor: Color,
     warningColor: Color
 ) {
-    LazyColumn(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        contentAlignment = Alignment.Center
     ) {
-        item {
-            Text(
-                text = "Dự đoán chi tiêu thông minh",
-                style = MaterialTheme.typography.titleLarge,
-                color = textColor,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = cardColor),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                shape = RoundedCornerShape(16.dp)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = cardColor),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            shape = RoundedCornerShape(24.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Column(
-                    modifier = Modifier.padding(20.dp)
+                // Icon với hiệu ứng gradient background
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .background(
+                            brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                                colors = listOf(
+                                    accentColor.copy(alpha = 0.2f),
+                                    successColor.copy(alpha = 0.2f)
+                                )
+                            ),
+                            shape = RoundedCornerShape(30.dp)
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "Dự đoán tháng tới",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = textColor,
-                        fontWeight = FontWeight.Bold
+                    Icon(
+                        imageVector = Icons.Default.TrendingUp,
+                        contentDescription = "Coming Soon",
+                        tint = accentColor,
+                        modifier = Modifier.size(60.dp)
                     )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                // Tiêu đề "Coming Soon"
+                Text(
+                    text = "Coming Soon",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = textColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 32.sp
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Mô tả tính năng
+                Text(
+                    text = "Dự đoán chi tiêu thông minh",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = accentColor,
+                    fontWeight = FontWeight.SemiBold
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Thông tin chi tiết
+                Text(
+                    text = "Chúng tôi đang phát triển tính năng dự đoán chi tiêu dựa trên AI và Machine Learning để giúp bạn quản lý tài chính tốt hơn.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = mutedTextColor,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    lineHeight = 24.sp
+                )
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                // Các tính năng sẽ có
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    FeatureItem(
+                        icon = Icons.Default.Analytics,
+                        text = "Phân tích xu hướng chi tiêu",
+                        textColor = textColor,
+                        iconColor = accentColor
+                    )
+                    FeatureItem(
+                        icon = Icons.Default.TrendingUp,
+                        text = "Dự đoán chi phí tháng tới",
+                        textColor = textColor,
+                        iconColor = successColor
+                    )
+                    FeatureItem(
+                        icon = Icons.Default.Warning,
+                        text = "Cảnh báo vượt ngân sách",
+                        textColor = textColor,
+                        iconColor = warningColor
+                    )
+                    FeatureItem(
+                        icon = Icons.Default.Lightbulb,
+                        text = "Gợi ý tiết kiệm thông minh",
+                        textColor = textColor,
+                        iconColor = Color(0xFFF59E0B)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                // Badge "Đang phát triển"
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = accentColor.copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Column {
-                            Text(
-                                text = "3,200,000đ",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = Color(0xFF10B981),
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "Dự đoán chi tiêu",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = mutedTextColor
-                            )
-                        }
-                        
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = "+5.2%",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = Color(0xFFEF4444),
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "So với tháng này",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = mutedTextColor
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = "In Progress",
+                            tint = accentColor,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Đang trong quá trình phát triển",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = accentColor,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text(
-                        text = "Độ tin cậy: 78%",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = mutedTextColor
-                    )
                 }
             }
         }
-        
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = cardColor),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp)
-                ) {
-                    Text(
-                        text = "Xu hướng theo danh mục",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = textColor,
-                        fontWeight = FontWeight.Bold
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    ForecastCategoryItem(
-                        category = "Ăn uống",
-                        current = "1,200,000đ",
-                        predicted = "1,350,000đ",
-                        change = "+12.5%",
-                        textColor = textColor,
-                        mutedTextColor = mutedTextColor
-                    )
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    ForecastCategoryItem(
-                        category = "Giao thông",
-                        current = "800,000đ",
-                        predicted = "850,000đ",
-                        change = "+6.2%",
-                        textColor = textColor,
-                        mutedTextColor = mutedTextColor
-                    )
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    ForecastCategoryItem(
-                        category = "Mua sắm",
-                        current = "600,000đ",
-                        predicted = "580,000đ",
-                        change = "-3.3%",
-                        textColor = textColor,
-                        mutedTextColor = mutedTextColor
-                    )
-                }
-            }
-        }
+    }
+}
+
+// Feature Item Component cho Coming Soon
+@Composable
+fun FeatureItem(
+    icon: ImageVector,
+    text: String,
+    textColor: Color,
+    iconColor: Color
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            tint = iconColor,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = textColor,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
@@ -858,6 +891,324 @@ fun ChatAIContent(
                         modifier = Modifier.size(20.dp)
                     )
                 }
+            }
+        }
+    }
+}
+
+// Voice Recording Card - Hold to Record like Zalo
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+fun VoiceRecordingCard(
+    chatViewModel: ChatViewModel,
+    cardColor: Color,
+    textColor: Color,
+    mutedTextColor: Color,
+    successColor: Color,
+    errorColor: Color
+) {
+    val context = LocalContext.current
+    val isListening by chatViewModel.voiceRecognitionManager.isListening.collectAsState()
+    val recognizedText by chatViewModel.voiceRecognitionManager.recognizedText.collectAsState()
+    val voiceError by chatViewModel.voiceRecognitionManager.error.collectAsState()
+    val isLoading by chatViewModel.isLoading.collectAsState()
+    val successMessage by chatViewModel.successMessage.collectAsState()
+    val errorMessage by chatViewModel.errorMessage.collectAsState()
+    
+    // Permission state
+    val micPermission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
+    
+    // Text input for testing (when mic is not available)
+    var testInputText by remember { mutableStateOf("") }
+    var showTestInput by remember { mutableStateOf(false) }
+    
+    // Timer state
+    var recordingSeconds by remember { mutableStateOf(0) }
+    
+    // Pulsing animation
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = EaseInOut),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse"
+    )
+    
+    // Timer effect
+    LaunchedEffect(isListening) {
+        recordingSeconds = 0
+        while (isListening) {
+            delay(1000)
+            recordingSeconds++
+        }
+    }
+    
+    // Handle recognized text
+    LaunchedEffect(recognizedText) {
+        if (recognizedText.isNotBlank()) {
+            chatViewModel.processVoiceCommand(recognizedText)
+            chatViewModel.voiceRecognitionManager.clearText()
+        }
+    }
+    
+    // Show success message
+    LaunchedEffect(successMessage) {
+        successMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            chatViewModel.clearMessages()
+        }
+    }
+    
+    // Show error message  
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            chatViewModel.clearMessages()
+        }
+    }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = if (isListening) errorColor.copy(alpha = 0.1f) else cardColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isListening) 4.dp else 0.dp),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Voice Button - Hold to Record with Pulse Animation
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                // Pulsing wave effect when listening
+                if (isListening) {
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .scale(pulseScale)
+                            .background(
+                                color = errorColor.copy(alpha = 0.3f),
+                                shape = RoundedCornerShape(50.dp)
+                            )
+                    )
+                }
+                
+                // Main button
+                Box(
+                    modifier = Modifier
+                        .size(100.dp)
+                        .background(
+                            color = when {
+                                isListening -> errorColor
+                                isLoading -> Color(0xFF3B82F6)
+                                else -> successColor
+                            },
+                            shape = RoundedCornerShape(50.dp)
+                        )
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onPress = {
+                                    // Check permission first
+                                    if (!micPermission.status.isGranted) {
+                                        micPermission.launchPermissionRequest()
+                                        return@detectTapGestures
+                                    }
+                                    
+                                    // Start recording when pressed
+                                    chatViewModel.voiceRecognitionManager.startListening()
+                                    
+                                    // Wait for release
+                                    tryAwaitRelease()
+                                    
+                                    // Stop recording when released
+                                    chatViewModel.voiceRecognitionManager.stopListening()
+                                }
+                            )
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(40.dp)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = if (isListening) Icons.Default.Stop else Icons.Default.Mic,
+                            contentDescription = "Voice Input",
+                            tint = Color.White,
+                            modifier = Modifier.size(50.dp)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            // Timer when recording
+            if (isListening) {
+                Text(
+                    text = String.format("%02d:%02d", recordingSeconds / 60, recordingSeconds % 60),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = errorColor,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            
+            // Instructions
+            Text(
+                text = when {
+                    !micPermission.status.isGranted -> "⚠️ Cần quyền microphone"
+                    isListening -> "🎤 Đang nghe... Thả ra để gửi"
+                    isLoading -> "⏳ Đang xử lý..."
+                    else -> "Giữ để nói lệnh"
+                },
+                style = MaterialTheme.typography.titleMedium,
+                color = when {
+                    !micPermission.status.isGranted -> Color(0xFFF59E0B)
+                    isListening -> errorColor
+                    isLoading -> Color(0xFF3B82F6)
+                    else -> textColor
+                },
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = when {
+                    !micPermission.status.isGranted -> "Nhấn vào nút để cấp quyền microphone"
+                    isListening -> "Nói: 'Thêm chi tiêu 50k cà phê'"
+                    isLoading -> "AI đang phân tích lệnh của bạn..."
+                    voiceError != null -> "❌ $voiceError"
+                    recognizedText.isNotBlank() -> "✅ Đã nhận: $recognizedText"
+                    else -> "Ví dụ: 'Thêm chi tiêu 100k ăn trưa' hoặc 'Thu nhập 5 triệu lương'"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = when {
+                    voiceError != null -> errorColor
+                    recognizedText.isNotBlank() -> successColor
+                    else -> mutedTextColor
+                },
+                textAlign = TextAlign.Center,
+                maxLines = 3
+            )
+            
+            // Divider
+            Spacer(modifier = Modifier.height(20.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(mutedTextColor.copy(alpha = 0.2f))
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Toggle Test Input
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showTestInput = !showTestInput },
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Test Input",
+                    tint = Color(0xFF3B82F6),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (showTestInput) "Ẩn Test Input" else "📝 Test bằng Text (Cho Emulator)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF3B82F6),
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = if (showTestInput) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = Color(0xFF3B82F6),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            
+            // Test Input Section
+            if (showTestInput) {
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                OutlinedTextField(
+                    value = testInputText,
+                    onValueChange = { testInputText = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Nhập lệnh để test") },
+                    placeholder = { Text("VD: Thêm chi tiêu 50k cà phê") },
+                    enabled = !isLoading,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF3B82F6),
+                        focusedLabelColor = Color(0xFF3B82F6),
+                        cursorColor = Color(0xFF3B82F6)
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    maxLines = 2
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Button(
+                    onClick = {
+                        if (testInputText.isNotBlank()) {
+                            chatViewModel.processVoiceCommand(testInputText)
+                            testInputText = ""
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    enabled = testInputText.isNotBlank() && !isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF3B82F6),
+                        disabledContainerColor = Color(0xFF3B82F6).copy(alpha = 0.5f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Đang xử lý...")
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Send,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Gửi lệnh cho AI", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Text(
+                    text = "💡 Test logic AI mà không cần microphone",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = mutedTextColor,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }

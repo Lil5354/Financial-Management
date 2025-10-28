@@ -1,6 +1,7 @@
 package com.example.expensetracker.ui.compose.screens
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,15 +17,51 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.expensetracker.R
 import com.example.expensetracker.data.entity.ChatMessageEntity
 import com.example.expensetracker.ui.viewmodel.ChatViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+
+// Helper function to parse markdown-style bold text
+fun parseMarkdownText(text: String, baseColor: Color): androidx.compose.ui.text.AnnotatedString {
+    return buildAnnotatedString {
+        var currentIndex = 0
+        val boldPattern = Regex("""\*\*(.+?)\*\*""")
+        
+        boldPattern.findAll(text).forEach { matchResult ->
+            // Add text before the bold part with color
+            if (matchResult.range.first > currentIndex) {
+                withStyle(style = SpanStyle(color = baseColor)) {
+                    append(text.substring(currentIndex, matchResult.range.first))
+                }
+            }
+            
+            // Add bold text with color
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = baseColor)) {
+                append(matchResult.groupValues[1])
+            }
+            
+            currentIndex = matchResult.range.last + 1
+        }
+        
+        // Add remaining text with color
+        if (currentIndex < text.length) {
+            withStyle(style = SpanStyle(color = baseColor)) {
+                append(text.substring(currentIndex))
+            }
+        }
+    }
+}
 
 @Composable
 fun ChatScreen(
@@ -44,12 +81,32 @@ fun ChatScreen(
     val errorMessage by viewModel.errorMessage.collectAsState()
     val currentInput by viewModel.currentInput.collectAsState()
     
+    // Voice recognition states
+    val isListening by viewModel.voiceRecognitionManager.isListening.collectAsState()
+    val recognizedText by viewModel.voiceRecognitionManager.recognizedText.collectAsState()
+    val voiceError by viewModel.voiceRecognitionManager.error.collectAsState()
+    
     val listState = rememberLazyListState()
     
     // Auto scroll to bottom when new messages arrive
     LaunchedEffect(chatMessages.size) {
         if (chatMessages.isNotEmpty()) {
             listState.animateScrollToItem(chatMessages.size - 1)
+        }
+    }
+    
+    // Handle recognized text
+    LaunchedEffect(recognizedText) {
+        if (recognizedText.isNotBlank()) {
+            viewModel.processVoiceCommand(recognizedText)
+            viewModel.voiceRecognitionManager.clearText()
+        }
+    }
+    
+    // Handle voice error
+    LaunchedEffect(voiceError) {
+        voiceError?.let {
+            // Show error briefly
         }
     }
     
@@ -187,15 +244,14 @@ fun WelcomeMessage(
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = Icons.Default.Psychology,
-                contentDescription = "AI Assistant",
-                tint = Color(0xFF06B6D4),
-                modifier = Modifier.size(48.dp)
+            Image(
+                painter = painterResource(id = R.drawable.logo_app_rounded),
+                contentDescription = "NoNo Assistant",
+                modifier = Modifier.size(64.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Xin chào! Tôi là Gemini 2.5 Flash",
+                text = "Xin chào! Tôi là NoNo Assistant",
                 style = MaterialTheme.typography.headlineSmall,
                 color = textColor,
                 fontWeight = FontWeight.Bold,
@@ -229,21 +285,20 @@ fun ChatMessageItem(
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
     ) {
         if (!isUser) {
-            // AI Avatar
+            // AI Avatar - NoNo Logo
             Box(
                 modifier = Modifier
                     .size(32.dp)
                     .background(
-                        color = accentColor,
+                        color = Color.White,
                         shape = RoundedCornerShape(16.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Psychology,
-                    contentDescription = "AI",
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
+                Image(
+                    painter = painterResource(id = R.drawable.logo_app_rounded),
+                    contentDescription = "NoNo AI",
+                    modifier = Modifier.size(28.dp)
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
@@ -264,8 +319,7 @@ fun ChatMessageItem(
                 )
             ) {
                 Text(
-                    text = message.content,
-                    color = if (isUser) Color.White else textColor,
+                    text = parseMarkdownText(message.content, if (isUser) Color.White else textColor),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(12.dp)
                 )
@@ -331,21 +385,20 @@ fun TypingIndicator(
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // AI Avatar
+        // AI Avatar - NoNo Logo
         Box(
             modifier = Modifier
                 .size(32.dp)
                 .background(
-                    color = accentColor,
+                    color = Color.White,
                     shape = RoundedCornerShape(16.dp)
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Psychology,
-                contentDescription = "AI",
-                tint = Color.White,
-                modifier = Modifier.size(16.dp)
+            Image(
+                painter = painterResource(id = R.drawable.logo_app_rounded),
+                contentDescription = "NoNo AI",
+                modifier = Modifier.size(28.dp)
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
