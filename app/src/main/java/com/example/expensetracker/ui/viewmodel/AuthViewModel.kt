@@ -29,6 +29,9 @@ class AuthViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
     
+    private val _successMessage = MutableStateFlow<String?>(null)
+    val successMessage: StateFlow<String?> = _successMessage.asStateFlow()
+    
     /**
      * Kiểm tra trạng thái đăng nhập hiện tại
      */
@@ -108,6 +111,7 @@ class AuthViewModel @Inject constructor(
                     // Không tự động set AuthState.Success sau khi đăng ký
                     // User cần đăng nhập lại để vào ứng dụng
                     _authState.value = AuthState.Idle
+                    _successMessage.value = "Đăng ký thành công! Vui lòng đăng nhập để tiếp tục."
                     _isLoading.value = false
                 }
                 .onFailure { error ->
@@ -157,6 +161,13 @@ class AuthViewModel @Inject constructor(
      */
     fun clearError() {
         _errorMessage.value = null
+    }
+    
+    /**
+     * Xóa success message
+     */
+    fun clearSuccess() {
+        _successMessage.value = null
     }
     
     /**
