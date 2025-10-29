@@ -20,7 +20,8 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val firebaseRepository: FirebaseRepository,
-    val voiceRecognitionManager: VoiceRecognitionManager
+    val voiceRecognitionManager: VoiceRecognitionManager,
+    val receiptScannerManager: com.example.expensetracker.data.service.ReceiptScannerManager
 ) : ViewModel() {
     
     private val _chatMessages = MutableStateFlow<List<ChatMessageEntity>>(emptyList())
@@ -667,6 +668,97 @@ class ChatViewModel @Inject constructor(
             amount >= 1_000_000 -> "${amount / 1_000_000} triệu đồng"
             amount >= 1_000 -> "${amount / 1_000}k đồng"
             else -> "$amount đồng"
+        }
+    }
+    
+    /**
+     * Process scanned receipt data from Gemini Vision API
+     */
+    fun processReceiptData(jsonResponse: String) {
+        viewModelScope.launch {
+            try {
+                android.util.Log.d("ChatViewModel", "📊 Processing receipt data: $jsonResponse")
+                
+                _isLoading.value = true
+                
+                // Clean response (remove markdown code fences if present)
+                val cleanResponse = jsonResponse
+                    .replace("```json", "")
+                    .replace("```", "")
+                    .trim()
+                
+                android.util.Log.d("ChatViewModel", "🧹 Clean response: $cleanResponse")
+                
+                // Extract values from JSON
+                val amountStr = extractJsonValue(cleanResponse, "amount")
+                val title = extractJsonValue(cleanResponse, "title")
+                val category = extractJsonValue(cleanResponse, "category")
+                val dateStr = extractJsonValue(cleanResponse, "date")
+                val note = extractJsonValue(cleanResponse, "note")
+                val merchant = extractJsonValue(cleanResponse, "merchant")
+                
+                android.util.Log.d("ChatViewModel", "📝 Extracted - amount: $amountStr, title: $title, category: $category")
+                
+                // Parse amount
+                val amount = try {
+                    amountStr?.replace("[^0-9.]".toRegex(), "")?.toDoubleOrNull() ?: 0.0
+                } catch (e: Exception) {
+                    android.util.Log.e("ChatViewModel", "Error parsing amount: ${e.message}")
+                    0.0
+                }
+                
+                // Parse date
+                val date = try {
+                    if (!dateStr.isNullOrBlank() && dateStr != "null") {
+                        val formatter = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+                        formatter.parse(dateStr) ?: Date()
+                    } else {
+                        Date()
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("ChatViewModel", "Using current date: ${e.message}")
+                    Date()
+                }
+                
+                // Create expense note
+                val fullNote = buildString {
+                    if (!merchant.isNullOrBlank() && merchant != "null") {
+                        append("Cửa hàng: $merchant\n")
+                    }
+                    if (!note.isNullOrBlank() && note != "null") {
+                        append(note)
+                    }
+                    if (isEmpty()) {
+                        append("Scan từ hóa đơn")
+                    }
+                }
+                
+                // Create expense
+                val expense = Expense(
+                    id = "",
+                    title = if (!title.isNullOrBlank() && title != "null") title else "Chi tiêu từ hóa đơn",
+                    amount = amount.toLong(),
+                    category = if (!category.isNullOrBlank() && category != "null") category else "Khác",
+                    date = date,
+                    note = fullNote,
+                    isExpense = true
+                )
+                
+                android.util.Log.d("ChatViewModel", "💰 Creating expense: $expense")
+                
+                // Save to Firebase
+                firebaseRepository.addExpense(expense)
+                
+                _successMessage.value = "✅ Đã thêm chi tiêu ${formatMoney(amount.toLong())} từ hóa đơn!"
+                _isLoading.value = false
+                
+                android.util.Log.d("ChatViewModel", "✅ Receipt processed successfully")
+                
+            } catch (e: Exception) {
+                android.util.Log.e("ChatViewModel", "❌ Error processing receipt: ${e.message}", e)
+                _errorMessage.value = "Lỗi xử lý hóa đơn: ${e.message}"
+                _isLoading.value = false
+            }
         }
     }
 }

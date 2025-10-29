@@ -2,7 +2,10 @@ package com.example.expensetracker.ui.compose.screens
 
 import android.Manifest
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -20,6 +23,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,11 +31,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
 import com.example.expensetracker.ui.viewmodel.ChatViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -244,7 +250,7 @@ fun AIScreen(
         // Content based on selected tab
         when (selectedTab) {
             0 -> AIAssistantContent(aiInsights, cardColor, textColor, mutedTextColor, accentColor, successColor, warningColor, errorColor, chatViewModel)
-            1 -> OCRContent(cardColor, textColor, mutedTextColor, accentColor)
+            1 -> OCRContent(cardColor, textColor, mutedTextColor, accentColor, chatViewModel)
             2 -> ForecastingContent(cardColor, textColor, mutedTextColor, accentColor, successColor, warningColor)
             3 -> ChatScreen(isDarkTheme)
         }
@@ -366,14 +372,83 @@ fun AIAssistantContent(
     }
 }
 
-// OCR Content - Modern Design
+// OCR Content - Modern Design with Camera & Image Picker
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun OCRContent(
     cardColor: Color,
     textColor: Color,
     mutedTextColor: Color,
-    accentColor: Color
+    accentColor: Color,
+    chatViewModel: ChatViewModel
 ) {
+    val context = LocalContext.current
+    val scanner = chatViewModel.receiptScannerManager
+    val scope = rememberCoroutineScope()
+    
+    val isProcessing by scanner.isProcessing.collectAsState()
+    val scannedData by scanner.scannedData.collectAsState()
+    val scanError by scanner.error.collectAsState()
+    val capturedImage by scanner.capturedImageUri.collectAsState()
+    
+    // Permissions
+    val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
+    val imagePermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        rememberPermissionState(Manifest.permission.READ_MEDIA_IMAGES)
+    } else {
+        rememberPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE)
+    }
+    
+    // Camera launcher
+    var tempImageUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempImageUri != null) {
+            android.util.Log.d("OCRContent", "✅ Image captured successfully")
+            scope.launch {
+                scanner.processReceiptImage(tempImageUri!!)
+            }
+        } else {
+            android.util.Log.e("OCRContent", "❌ Image capture failed")
+            Toast.makeText(context, "Chụp ảnh thất bại", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    // Image picker launcher
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: android.net.Uri? ->
+        uri?.let {
+            android.util.Log.d("OCRContent", "✅ Image picked: $it")
+            val copiedUri = scanner.copyImageToCache(it)
+            if (copiedUri != null) {
+                scope.launch {
+                    scanner.processReceiptImage(copiedUri)
+                }
+            }
+        }
+    }
+    
+    // Show error toast
+    LaunchedEffect(scanError) {
+        scanError?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            scanner.clearError()
+        }
+    }
+    
+    // Process scanned data and create expense
+    LaunchedEffect(scannedData) {
+        scannedData?.let { data ->
+            android.util.Log.d("OCRContent", "📊 Processing scanned data")
+            chatViewModel.processReceiptData(data)
+            delay(500)
+            scanner.clearData()
+        }
+    }
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -389,6 +464,7 @@ fun OCRContent(
             )
         }
         
+        // Camera & Upload buttons
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -400,92 +476,173 @@ fun OCRContent(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.CameraAlt,
-                        contentDescription = "Camera",
-                        tint = Color(0xFF10B981),
-                        modifier = Modifier.size(64.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text(
-                        text = "Chụp ảnh hóa đơn",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = textColor,
-                        fontWeight = FontWeight.Bold
-                    )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    Text(
-                        text = "AI sẽ tự động nhận diện số tiền, ngày tháng và mô tả từ hóa đơn của bạn",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = mutedTextColor,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                    
-                    Spacer(modifier = Modifier.height(20.dp))
-                    
-                    Button(
-                        onClick = { /* TODO: Open camera */ },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF10B981),
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
+                    if (isProcessing) {
+                        CircularProgressIndicator(
+                            color = Color(0xFF10B981),
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Đang xử lý hóa đơn...",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = textColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
                         Icon(
                             imageVector = Icons.Default.CameraAlt,
-                            contentDescription = "Chụp ảnh",
-                            modifier = Modifier.size(20.dp)
+                            contentDescription = "Camera",
+                            tint = Color(0xFF10B981),
+                            modifier = Modifier.size(64.dp)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Chụp ảnh hóa đơn")
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Text(
+                            text = "Chụp ảnh hóa đơn",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = textColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = "AI sẽ tự động nhận diện số tiền, ngày tháng và mô tả từ hóa đơn của bạn",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = mutedTextColor,
+                            textAlign = TextAlign.Center
+                        )
+                        
+                        Spacer(modifier = Modifier.height(20.dp))
+                        
+                        // Camera button
+                        Button(
+                            onClick = {
+                                if (cameraPermission.status.isGranted) {
+                                    tempImageUri = scanner.createImageFileUri()
+                                    cameraLauncher.launch(tempImageUri)
+                                } else {
+                                    cameraPermission.launchPermissionRequest()
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF10B981),
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CameraAlt,
+                                contentDescription = "Chụp ảnh",
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Chụp ảnh hóa đơn")
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        // Upload button
+                        OutlinedButton(
+                            onClick = {
+                                if (imagePermission.status.isGranted) {
+                                    imagePickerLauncher.launch("image/*")
+                                } else {
+                                    imagePermission.launchPermissionRequest()
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFF10B981)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Image,
+                                contentDescription = "Tải ảnh",
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Tải ảnh từ thư viện")
+                        }
                     }
                 }
             }
         }
         
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = cardColor),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp)
+        // Display captured image if available
+        capturedImage?.let { uri ->
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = cardColor),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text(
-                        text = "Kết quả scan gần đây",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = textColor,
-                        fontWeight = FontWeight.Bold
-                    )
-                    
-                    Spacer(modifier = Modifier.height(12.dp))
-                    
-                    // Sample OCR results
-                    OCRResultItem(
-                        title = "Cà phê Starbucks",
-                        amount = "85,000đ",
-                        date = "Hôm nay",
-                        confidence = 0.95f,
-                        textColor = textColor,
-                        mutedTextColor = mutedTextColor
-                    )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    OCRResultItem(
-                        title = "Xăng xe",
-                        amount = "150,000đ",
-                        date = "Hôm qua",
-                        confidence = 0.88f,
-                        textColor = textColor,
-                        mutedTextColor = mutedTextColor
-                    )
+                    Column(
+                        modifier = Modifier.padding(20.dp)
+                    ) {
+                        Text(
+                            text = "Ảnh đã chụp",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = textColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        Image(
+                            painter = rememberAsyncImagePainter(uri),
+                            contentDescription = "Receipt",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+                }
+            }
+        }
+        
+        // Display scanned result
+        if (scannedData != null) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF10B981).copy(alpha = 0.1f)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Success",
+                                tint = Color(0xFF10B981)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Đã xử lý hóa đơn thành công!",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color(0xFF10B981),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        Text(
+                            text = "Chi tiêu đã được thêm vào danh sách",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = textColor
+                        )
+                    }
                 }
             }
         }
