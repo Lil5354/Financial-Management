@@ -158,7 +158,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-datetime:0.4.1'
     
     // Gemini AI
-    implementation 'com.google.ai.client.generativeai:generativeai:0.2.2'
+    implementation 'com.google.ai.client.generativeai:generativeai:0.9.0'
     
     // Permissions
     implementation 'com.guolindev.permissionx:permissionx:1.7.1'

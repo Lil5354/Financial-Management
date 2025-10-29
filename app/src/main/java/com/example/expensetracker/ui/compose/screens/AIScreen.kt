@@ -12,7 +12,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.animateContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -472,23 +474,57 @@ fun OCRContent(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     if (isProcessing) {
-                        CircularProgressIndicator(
-                            color = Color(0xFF10B981),
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Đang xử lý hóa đơn...",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = textColor,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(80.dp)
+                                    .background(
+                                        color = Color(0xFF10B981).copy(alpha = 0.1f),
+                                        shape = CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    color = Color(0xFF10B981),
+                                    modifier = Modifier.size(48.dp),
+                                    strokeWidth = 4.dp
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.height(20.dp))
+                            
+                            Text(
+                                text = "🤖 AI đang phân tích...",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color(0xFF10B981),
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Text(
+                                text = "Đọc hóa đơn và trích xuất thông tin",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = mutedTextColor,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     } else {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
                         Icon(
                             imageVector = Icons.Default.CameraAlt,
                             contentDescription = "Camera",
@@ -566,6 +602,7 @@ fun OCRContent(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Tải ảnh từ thư viện")
+                        }
                         }
                     }
                 }
@@ -1243,129 +1280,57 @@ fun VoiceRecordingCard(
             Text(
                 text = when {
                     !micPermission.status.isGranted -> "Nhấn vào nút để cấp quyền microphone"
-                    isListening -> "Nói: 'Thêm chi tiêu 50k cà phê'"
+                    isListening -> "Đang nghe bạn nói..."
                     isLoading -> "AI đang phân tích lệnh của bạn..."
-                    voiceError != null -> "❌ $voiceError"
-                    recognizedText.isNotBlank() -> "✅ Đã nhận: $recognizedText"
+                    voiceError != null -> voiceError ?: ""
                     else -> "Ví dụ: 'Thêm chi tiêu 100k ăn trưa' hoặc 'Thu nhập 5 triệu lương'"
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = when {
                     voiceError != null -> errorColor
-                    recognizedText.isNotBlank() -> successColor
                     else -> mutedTextColor
                 },
                 textAlign = TextAlign.Center,
-                maxLines = 3
+                maxLines = 2
             )
             
-            // Divider
-            Spacer(modifier = Modifier.height(20.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .background(mutedTextColor.copy(alpha = 0.2f))
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            // Toggle Test Input
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showTestInput = !showTestInput },
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Test Input",
-                    tint = Color(0xFF3B82F6),
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (showTestInput) "Ẩn Test Input" else "📝 Test bằng Text (Cho Emulator)",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF3B82F6),
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    imageVector = if (showTestInput) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = null,
-                    tint = Color(0xFF3B82F6),
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-            
-            // Test Input Section
-            if (showTestInput) {
-                Spacer(modifier = Modifier.height(16.dp))
+            // Recognized Text Display - Beautiful UI
+            if (recognizedText.isNotBlank()) {
+                Spacer(modifier = Modifier.height(20.dp))
                 
-                OutlinedTextField(
-                    value = testInputText,
-                    onValueChange = { testInputText = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Nhập lệnh để test") },
-                    placeholder = { Text("VD: Thêm chi tiêu 50k cà phê") },
-                    enabled = !isLoading,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF3B82F6),
-                        focusedLabelColor = Color(0xFF3B82F6),
-                        cursorColor = Color(0xFF3B82F6)
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    maxLines = 2
-                )
-                
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                Button(
-                    onClick = {
-                        if (testInputText.isNotBlank()) {
-                            chatViewModel.processVoiceCommand(testInputText)
-                            testInputText = ""
-                        }
-                    },
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
-                    enabled = testInputText.isNotBlank() && !isLoading,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF3B82F6),
-                        disabledContainerColor = Color(0xFF3B82F6).copy(alpha = 0.5f)
+                        .animateContentSize(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = successColor.copy(alpha = 0.1f)
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        Text(
+                            text = "Đã nhận diện:",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = successColor,
+                            fontWeight = FontWeight.Bold
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Đang xử lý...")
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Send,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = "\"$recognizedText\"",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = textColor,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 24.sp
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Gửi lệnh cho AI", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     }
                 }
-                
-                Spacer(modifier = Modifier.height(8.dp))
-                
-                Text(
-                    text = "💡 Test logic AI mà không cần microphone",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = mutedTextColor,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         }
     }

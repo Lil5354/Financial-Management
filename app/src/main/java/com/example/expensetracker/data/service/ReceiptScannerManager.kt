@@ -35,8 +35,14 @@ class ReceiptScannerManager @Inject constructor(
     
     // Gemini Vision Model
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
-        apiKey = "AIzaSyD3bJtJFmTPPr3Grh62VMN3CMFSqKFzYXU"
+        modelName = "gemini-2.0-flash-thinking-exp-1219",
+        apiKey = "AIzaSyD3bJtJFmTPPr3Grh62VMN3CMFSqKFzYXU",
+        generationConfig = com.google.ai.client.generativeai.type.generationConfig {
+            temperature = 0.4f  // Lower temperature for more accurate OCR
+            topK = 32
+            topP = 1f
+            maxOutputTokens = 2048
+        }
     )
     
     /**
