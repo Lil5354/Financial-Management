@@ -9,13 +9,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.expensetracker.R
+import com.example.expensetracker.data.service.LanguageManager
+import com.example.expensetracker.data.service.ExcelExportService
+import com.example.expensetracker.ui.compose.components.LanguageSelectionDialog
+import com.example.expensetracker.ui.compose.components.ExportDialog
+import com.example.expensetracker.ui.compose.components.ExportFormat
+import com.example.expensetracker.ui.viewmodel.ExpenseViewModel
+import com.example.expensetracker.ui.viewmodel.AuthViewModel
+import android.content.Intent
+import android.app.Activity
 
 // Data class cho Setting Item
 data class SettingItem(
@@ -31,20 +46,121 @@ data class SettingItem(
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToProfile: () -> Unit = {},
+    onSignOut: () -> Unit = {},
     isDarkTheme: Boolean = true,
-    onToggleTheme: () -> Unit = {}
+    onToggleTheme: () -> Unit = {},
+    languageManager: LanguageManager? = null,
+    expenseViewModel: ExpenseViewModel = hiltViewModel(),
+    excelExportService: ExcelExportService? = null,
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val localLanguageManager = remember { languageManager ?: LanguageManager(context) }
+    val localExcelExportService = remember { excelExportService ?: ExcelExportService(context) }
+    
+    // Language state
+    val currentLanguage by localLanguageManager.currentLanguage.collectAsState()
+    val isLanguageChanged by localLanguageManager.isLanguageChanged.collectAsState()
+    val currentLanguageName = localLanguageManager.getCurrentLanguageNativeName()
+    
+    // Export state
+    val exportState by localExcelExportService.exportState.collectAsState()
+    val exportProgress by localExcelExportService.progress.collectAsState()
+    val expenses by expenseViewModel.expenses.collectAsState()
+    
+    // Dialog states
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    var showExportDialog by remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var showExportSuccess by remember { mutableStateOf(false) }
+    var exportedFileName by remember { mutableStateOf("") }
+    
+    // Load expenses for export
+    LaunchedEffect(Unit) {
+        expenseViewModel.loadExpenses()
+    }
+    
+    // Handle language change - restart activity to apply new language
+    LaunchedEffect(isLanguageChanged) {
+        if (isLanguageChanged) {
+            localLanguageManager.resetLanguageChangeState()
+            // Restart activity to apply language change
+            if (context is Activity) {
+                val intent = Intent(context, context.javaClass)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                context.startActivity(intent)
+                if (context is Activity) {
+                    context.finish()
+                }
+            }
+        }
+    }
+    
+    // Handle export state changes
+    LaunchedEffect(exportState) {
+        when (val state = exportState) {
+            is ExcelExportService.ExportState.Success -> {
+                showExportDialog = false
+                exportedFileName = state.fileName
+                showExportSuccess = true
+                localExcelExportService.resetExportState()
+            }
+            is ExcelExportService.ExportState.Error -> {
+                showExportDialog = false
+                // TODO: Show error snackbar
+                localExcelExportService.resetExportState()
+            }
+            else -> {}
+        }
+    }
     val backgroundColor = if (isDarkTheme) Color(0xFF0F0F0F) else Color(0xFFFAFAFA)
     val cardColor = if (isDarkTheme) Color(0xFF1F2937) else Color.White
     val textColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
     val mutedTextColor = if (isDarkTheme) Color(0xFF9CA3AF) else Color(0xFF6B7280)
     
+    // Get string resources outside of remember
+    val settingsTheme = stringResource(R.string.settings_theme)
+    val settingsThemeDark = stringResource(R.string.settings_theme_dark)
+    val settingsThemeLight = stringResource(R.string.settings_theme_light)
+    val settingsLanguage = stringResource(R.string.settings_language)
+    val settingsProfile = stringResource(R.string.settings_profile)
+    val settingsProfileDesc = stringResource(R.string.settings_profile_desc)
+    val settingsSecurity = stringResource(R.string.settings_security)
+    val settingsSecurityDesc = stringResource(R.string.settings_security_desc)
+    val settingsNotifications = stringResource(R.string.settings_notifications)
+    val settingsNotificationsDesc = stringResource(R.string.settings_notifications_desc)
+    val settingsLogout = stringResource(R.string.settings_logout)
+    val settingsLogoutDesc = stringResource(R.string.settings_logout_desc)
+    val settingsLogoutConfirm = stringResource(R.string.settings_logout_confirm)
+    val settingsBackup = stringResource(R.string.settings_backup)
+    val settingsBackupDesc = stringResource(R.string.settings_backup_desc)
+    val settingsRestore = stringResource(R.string.settings_restore)
+    val settingsRestoreDesc = stringResource(R.string.settings_restore_desc)
+    val settingsExport = stringResource(R.string.settings_export)
+    val settingsExportDesc = stringResource(R.string.settings_export_desc)
+    val settingsHelp = stringResource(R.string.settings_help)
+    val settingsHelpDesc = stringResource(R.string.settings_help_desc)
+    val settingsRate = stringResource(R.string.settings_rate)
+    val settingsRateDesc = stringResource(R.string.settings_rate_desc)
+    val settingsShareApp = stringResource(R.string.settings_share_app)
+    val settingsShareAppDesc = stringResource(R.string.settings_share_app_desc)
+    val settingsVersion = stringResource(R.string.settings_version)
+    val settingsVersionNumber = stringResource(R.string.settings_version_number)
+    val settingsTerms = stringResource(R.string.settings_terms)
+    val settingsPrivacy = stringResource(R.string.settings_privacy)
+    val settingsGeneral = stringResource(R.string.settings_general)
+    val settingsAccount = stringResource(R.string.settings_account)
+    val settingsData = stringResource(R.string.settings_data)
+    val settingsSupport = stringResource(R.string.settings_support)
+    val settingsAboutApp = stringResource(R.string.settings_about_app)
+    val settingsAppDescription = stringResource(R.string.settings_app_description)
+    
     // Settings data
-    val generalSettings = remember {
+    val generalSettings = remember(isDarkTheme, settingsTheme, settingsThemeDark, settingsThemeLight, settingsLanguage, currentLanguageName) {
         listOf(
             SettingItem(
-                title = "Giao diện",
-                subtitle = if (isDarkTheme) "Tối" else "Sáng",
+                title = settingsTheme,
+                subtitle = if (isDarkTheme) settingsThemeDark else settingsThemeLight,
                 icon = Icons.Default.Palette,
                 onClick = onToggleTheme,
                 trailing = {
@@ -61,106 +177,106 @@ fun SettingsScreen(
                 }
             ),
             SettingItem(
-                title = "Ngôn ngữ",
-                subtitle = "Tiếng Việt",
+                title = settingsLanguage,
+                subtitle = currentLanguageName,
                 icon = Icons.Default.Language,
-                onClick = { /* TODO: Language selection */ }
-            ),
-            SettingItem(
-                title = "Đơn vị tiền tệ",
-                subtitle = "VND (₫)",
-                icon = Icons.Default.AttachMoney,
-                onClick = { /* TODO: Currency selection */ }
+                onClick = { showLanguageDialog = true }
             )
         )
     }
     
-    val accountSettings = remember {
+    val accountSettings = remember(settingsProfile, settingsProfileDesc, settingsSecurity, settingsSecurityDesc, settingsNotifications, settingsNotificationsDesc, settingsLogout, settingsLogoutDesc) {
         listOf(
             SettingItem(
-                title = "Hồ sơ cá nhân",
-                subtitle = "Chỉnh sửa thông tin",
+                title = settingsProfile,
+                subtitle = settingsProfileDesc,
                 icon = Icons.Default.Person,
                 onClick = onNavigateToProfile
             ),
             SettingItem(
-                title = "Bảo mật",
-                subtitle = "Mật khẩu, xác thực",
+                title = settingsSecurity,
+                subtitle = settingsSecurityDesc,
                 icon = Icons.Default.Security,
                 onClick = { /* TODO: Security settings */ }
             ),
             SettingItem(
-                title = "Thông báo",
-                subtitle = "Cài đặt thông báo",
+                title = settingsNotifications,
+                subtitle = settingsNotificationsDesc,
                 icon = Icons.Default.Notifications,
                 onClick = { /* TODO: Notification settings */ }
+            ),
+            SettingItem(
+                title = settingsLogout,
+                subtitle = settingsLogoutDesc,
+                icon = Icons.Default.ExitToApp,
+                onClick = { showLogoutDialog = true }
             )
         )
     }
     
-    val dataSettings = remember {
+    val dataSettings = remember(settingsBackup, settingsBackupDesc, settingsRestore, settingsRestoreDesc, settingsExport, settingsExportDesc) {
         listOf(
             SettingItem(
-                title = "Sao lưu dữ liệu",
-                subtitle = "Backup toàn bộ dữ liệu",
+                title = settingsBackup,
+                subtitle = settingsBackupDesc,
                 icon = Icons.Default.Backup,
                 onClick = { /* TODO: Backup data */ }
             ),
             SettingItem(
-                title = "Khôi phục dữ liệu",
-                subtitle = "Restore từ backup",
+                title = settingsRestore,
+                subtitle = settingsRestoreDesc,
                 icon = Icons.Default.Restore,
                 onClick = { /* TODO: Restore data */ }
             ),
             SettingItem(
-                title = "Xuất dữ liệu",
-                subtitle = "Export ra file Excel/CSV",
+                title = settingsExport,
+                subtitle = settingsExportDesc,
                 icon = Icons.Default.FileDownload,
-                onClick = { /* TODO: Export data */ }
+                onClick = { showExportDialog = true }
             )
         )
     }
     
-    val supportSettings = remember {
+    val supportSettings = remember(settingsHelp, settingsHelpDesc, settingsRate, settingsRateDesc, settingsShareApp, settingsShareAppDesc) {
         listOf(
             SettingItem(
-                title = "Trợ giúp & Hỗ trợ",
-                subtitle = "FAQ, liên hệ",
+                title = settingsHelp,
+                subtitle = settingsHelpDesc,
                 icon = Icons.Default.Help,
                 onClick = { /* TODO: Help & Support */ }
             ),
             SettingItem(
-                title = "Đánh giá ứng dụng",
-                subtitle = "Rate trên Play Store",
+                title = settingsRate,
+                subtitle = settingsRateDesc,
                 icon = Icons.Default.Star,
                 onClick = { /* TODO: Rate app */ }
             ),
             SettingItem(
-                title = "Chia sẻ ứng dụng",
-                subtitle = "Giới thiệu cho bạn bè",
+                title = settingsShareApp,
+                subtitle = settingsShareAppDesc,
                 icon = Icons.Default.Share,
                 onClick = { /* TODO: Share app */ }
             )
         )
     }
     
-    val aboutSettings = remember {
+    val aboutSettings = remember(settingsVersion, settingsVersionNumber, settingsTerms, settingsPrivacy) {
         listOf(
             SettingItem(
-                title = "Phiên bản",
-                subtitle = "v1.0.0",
+                title = settingsVersion,
+                subtitle = settingsVersionNumber,
                 icon = Icons.Default.Info,
                 onClick = { /* TODO: Version info */ }
             ),
             SettingItem(
-                title = "Điều khoản sử dụng",
-                subtitle = "Terms of Service",
+                title = settingsTerms,
+                subtitle = settingsTerms,
                 icon = Icons.Default.Description,
                 onClick = { /* TODO: Terms of Service */ }
             ),
             SettingItem(
-                title = "Chính sách bảo mật",
-                subtitle = "Privacy Policy",
+                title = settingsPrivacy,
+                subtitle = settingsPrivacy,
                 icon = Icons.Default.PrivacyTip,
                 onClick = { /* TODO: Privacy Policy */ }
             )
@@ -190,14 +306,14 @@ fun SettingsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Quay lại",
+                        contentDescription = stringResource(R.string.back),
                         tint = textColor,
                         modifier = Modifier.size(24.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Cài đặt",
+                    text = stringResource(R.string.settings_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = textColor,
                     fontWeight = FontWeight.Bold
@@ -245,7 +361,7 @@ fun SettingsScreen(
                     )
                     
                     Text(
-                        text = "Quản lý chi tiêu thông minh",
+                        text = settingsAppDescription,
                         style = MaterialTheme.typography.bodyMedium,
                         color = mutedTextColor
                     )
@@ -253,7 +369,7 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     Text(
-                        text = "Phiên bản 1.0.0",
+                        text = settingsVersionNumber,
                         style = MaterialTheme.typography.bodySmall,
                         color = mutedTextColor
                     )
@@ -264,7 +380,7 @@ fun SettingsScreen(
         // General Settings
         item {
             SettingsSection(
-                title = "Cài đặt chung",
+                title = settingsGeneral,
                 settings = generalSettings,
                 cardColor = cardColor,
                 textColor = textColor,
@@ -275,7 +391,7 @@ fun SettingsScreen(
         // Account Settings
         item {
             SettingsSection(
-                title = "Tài khoản",
+                title = settingsAccount,
                 settings = accountSettings,
                 cardColor = cardColor,
                 textColor = textColor,
@@ -286,7 +402,7 @@ fun SettingsScreen(
         // Data Settings
         item {
             SettingsSection(
-                title = "Dữ liệu",
+                title = settingsData,
                 settings = dataSettings,
                 cardColor = cardColor,
                 textColor = textColor,
@@ -297,7 +413,7 @@ fun SettingsScreen(
         // Support Settings
         item {
             SettingsSection(
-                title = "Hỗ trợ",
+                title = settingsSupport,
                 settings = supportSettings,
                 cardColor = cardColor,
                 textColor = textColor,
@@ -308,7 +424,7 @@ fun SettingsScreen(
         // About Settings
         item {
             SettingsSection(
-                title = "Về ứng dụng",
+                title = settingsAboutApp,
                 settings = aboutSettings,
                 cardColor = cardColor,
                 textColor = textColor,
@@ -319,6 +435,118 @@ fun SettingsScreen(
         item {
             Spacer(modifier = Modifier.height(40.dp))
         }
+    }
+    
+    // Language Selection Dialog
+    LanguageSelectionDialog(
+        isVisible = showLanguageDialog,
+        currentLanguage = currentLanguage,
+        supportedLanguages = localLanguageManager.supportedLanguages,
+        onLanguageSelected = { languageCode ->
+            localLanguageManager.setLanguage(languageCode)
+        },
+        onDismiss = { showLanguageDialog = false },
+        isDarkTheme = isDarkTheme
+    )
+    
+    // Export Dialog
+    val coroutineScope = rememberCoroutineScope()
+    ExportDialog(
+        isVisible = showExportDialog,
+        onExport = { startDate, endDate, format ->
+            when (format) {
+                ExportFormat.EXCEL -> {
+                    coroutineScope.launch {
+                        localExcelExportService.exportExpensesToExcel(
+                            expenses = expenses,
+                            startDate = startDate,
+                            endDate = endDate,
+                            includeCharts = true
+                        )
+                    }
+                }
+                ExportFormat.CSV -> {
+                    // TODO: Implement CSV export
+                }
+            }
+        },
+        onDismiss = { 
+            if (exportState !is ExcelExportService.ExportState.InProgress) {
+                showExportDialog = false
+            }
+        },
+        isExporting = exportState is ExcelExportService.ExportState.InProgress,
+        exportProgress = exportProgress,
+        isDarkTheme = isDarkTheme
+    )
+    
+    // Logout Confirmation Dialog
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = {
+                Text(
+                    text = settingsLogout,
+                    color = textColor,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = settingsLogoutConfirm,
+                    color = textColor
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showLogoutDialog = false
+                        authViewModel.signOut()
+                        onSignOut()
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = Color(0xFFEF4444)
+                    )
+                ) {
+                    Text(
+                        text = settingsLogout,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showLogoutDialog = false }
+                ) {
+                    Text(
+                        text = stringResource(R.string.action_cancel),
+                        color = mutedTextColor
+                    )
+                }
+            },
+            containerColor = cardColor
+        )
+    }
+    
+    // Export Success Dialog
+    if (showExportSuccess) {
+        AlertDialog(
+            onDismissRequest = { showExportSuccess = false },
+            title = {
+                Text("Xuất dữ liệu thành công!")
+            },
+            text = {
+                Text("File '$exportedFileName' đã được lưu vào thư mục Downloads/NoNo")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { showExportSuccess = false }
+                ) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }
 

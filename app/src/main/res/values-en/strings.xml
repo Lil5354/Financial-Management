@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NoNo</string>
+    
+    <!-- Splash Screen -->
+    <string name="splash_loading">Loading...</string>
+    
+    <!-- Main Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_expenses">Expenses</string>
+    <string name="nav_reports">Reports</string>
+    <string name="nav_settings">Settings</string>
+    
+    <!-- Home Screen -->
+    <string name="home_welcome">Welcome!</string>
+    <string name="home_total_expense">Total expenses this month</string>
+    <string name="home_recent_expenses">Recent expenses</string>
+    <string name="home_add_expense">Add expense</string>
+    <string name="home_view_all">View all</string>
+    
+    <!-- Expense Management -->
+    <string name="expense_title">Title</string>
+    <string name="expense_amount">Amount</string>
+    <string name="expense_category">Category</string>
+    <string name="expense_date">Date</string>
+    <string name="expense_note">Note</string>
+    <string name="expense_image">Image</string>
+    
+    <string name="add_expense">Add expense</string>
+    <string name="edit_expense">Edit expense</string>
+    <string name="delete_expense">Delete expense</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="back">Back</string>
+    <string name="ok">OK</string>
+    
+    <!-- Categories -->
+    <string name="category_food">Food and Dining</string>
+    <string name="category_transport">Transportation</string>
+    <string name="category_shopping">Shopping</string>
+    <string name="category_entertainment">Entertainment</string>
+    <string name="category_health">Healthcare</string>
+    <string name="category_education">Education</string>
+    <string name="category_other">Other</string>
+    
+    <!-- Reports -->
+    <string name="reports_title">Expense reports</string>
+    <string name="reports_daily">Daily</string>
+    <string name="reports_weekly">Weekly</string>
+    <string name="reports_monthly">Monthly</string>
+    <string name="reports_yearly">Yearly</string>
+    <string name="reports_total">Total</string>
+    <string name="reports_average">Average</string>
+    <string name="reports_forecast">Forecast</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_backup">Backup data</string>
+    <string name="settings_sync">Firebase sync</string>
+    <string name="settings_categories">Manage categories</string>
+    <string name="settings_about">About</string>
+    
+    <!-- Notifications -->
+    <string name="notification_reminder_title">Expense reminder</string>
+    <string name="notification_reminder_body">Don\'t forget to log your expenses today!</string>
+    
+    <!-- AI Features -->
+    <string name="ai_ocr_title">Receipt scanner</string>
+    <string name="ai_ocr_description">Take a photo of your receipt to automatically fill information</string>
+    <string name="ai_auto_category">Auto categorization</string>
+    <string name="ai_forecast">Expense forecast</string>
+    
+    <!-- Messages -->
+    <string name="message_success">Success!</string>
+    <string name="message_error">An error occurred</string>
+    <string name="message_loading">Loading...</string>
+    <string name="message_no_data">No data</string>
+    <string name="message_confirm_delete">Are you sure you want to delete this expense?</string>
+    
+    <!-- Validation -->
+    <string name="validation_title_required">Please enter a title</string>
+    <string name="validation_amount_required">Please enter an amount</string>
+    <string name="validation_amount_invalid">Invalid amount</string>
+    <string name="validation_category_required">Please select a category</string>
+    
+    <!-- Currency -->
+    <string name="currency_symbol">$</string>
+    <string name="currency_format">$%,.2f</string>
+    
+    <!-- Date Format -->
+    <string name="date_format">MM/dd/yyyy</string>
+    <string name="date_time_format">MM/dd/yyyy HH:mm</string>
+    
+    <!-- Empty States -->
+    <string name="empty_expenses">No expenses yet</string>
+    <string name="empty_expenses_description">Add your first expense</string>
+    <string name="empty_categories">No categories yet</string>
+    <string name="empty_reports">No reports yet</string>
+    
+    <!-- Actions -->
+    <string name="action_take_photo">Take photo</string>
+    <string name="action_choose_photo">Choose photo</string>
+    <string name="action_remove_photo">Remove photo</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_share">Share</string>
+    <string name="action_export">Export data</string>
+    
+    <!-- Permissions -->
+    <string name="permission_camera_title">Camera permission</string>
+    <string name="permission_camera_message">The app needs camera permission to take photos of receipts</string>
+    <string name="permission_storage_title">Storage permission</string>
+    <string name="permission_storage_message">The app needs storage permission to save images</string>
+    
+    <!-- Firebase -->
+    <string name="firebase_sync_success">Sync successful</string>
+    <string name="firebase_sync_error">Sync error</string>
+    <string name="firebase_backup_success">Backup successful</string>
+    
+    <!-- Home Screen Specific -->
+    <string name="home_greeting">Hello!</string>
+    <string name="home_financial_overview">Your financial overview</string>
+    <string name="home_total_assets">Total assets</string>
+    <string name="home_income">Income</string>
+    <string name="home_expense">Expense</string>
+    <string name="home_ai_assistant">AI Assistant</string>
+    <string name="home_ai_analysis">AI Analysis</string>
+    <string name="home_ai_analysis_desc">Smart expense analysis with AI</string>
+    <string name="home_quick_info">Quick info</string>
+    <string name="home_today">Today</string>
+    <string name="home_this_week">This week</string>
+    <string name="home_recent_transactions">Recent transactions</string>
+    <string name="home_no_transactions">No transactions yet</string>
+    <string name="home_no_transactions_desc">Add your first expense</string>
+    <string name="home_yesterday">Yesterday</string>
+    <string name="home_compared_to_last_month">compared to last month</string>
+    
+    <!-- Settings Screen Specific -->
+    <string name="settings_general">General</string>
+    <string name="settings_account">Account</string>
+    <string name="settings_data">Data</string>
+    <string name="settings_support">Support</string>
+    <string name="settings_about_app">About app</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_vietnamese">Vietnamese</string>
+    <string name="settings_currency">Currency</string>
+    <string name="settings_currency_vnd">VND (₫)</string>
+    <string name="settings_currency_usd">USD ($)</string>
+    <string name="settings_profile">Profile</string>
+    <string name="settings_profile_desc">Edit your information</string>
+    <string name="settings_security">Security</string>
+    <string name="settings_security_desc">Password, authentication</string>
+    <string name="settings_notifications_desc">Notification settings</string>
+    <string name="settings_logout">Sign Out</string>
+    <string name="settings_logout_desc">Sign out of your account</string>
+    <string name="settings_logout_confirm">Are you sure you want to sign out?</string>
+    <string name="settings_backup_desc">Backup all data</string>
+    <string name="settings_restore">Restore data</string>
+    <string name="settings_restore_desc">Restore from backup</string>
+    <string name="settings_export">Export data</string>
+    <string name="settings_export_desc">Export to Excel/CSV file</string>
+    <string name="settings_help">Help &amp; Support</string>
+    <string name="settings_help_desc">FAQ, contact</string>
+    <string name="settings_rate">Rate app</string>
+    <string name="settings_rate_desc">Rate on Play Store</string>
+    <string name="settings_share_app">Share app</string>
+    <string name="settings_share_app_desc">Recommend to friends</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_version_number">v1.0.0</string>
+    <string name="settings_terms">Terms of Service</string>
+    <string name="settings_privacy">Privacy Policy</string>
+    <string name="settings_app_description">Smart expense management</string>
+    
+    <!-- Language Selection -->
+    <string name="language_selection_title">Select Language</string>
+    <string name="language_selection_subtitle">Choose your preferred language</string>
+    <string name="language_apply">Apply</string>
+    <string name="language_restart_required">App restart required</string>
+    <string name="language_restart_message">The app will restart to apply the new language</string>
+    
+    <!-- Export -->
+    <string name="export_title">Export Data</string>
+    <string name="export_subtitle">Choose date range and format</string>
+    <string name="export_date_range">Date Range</string>
+    <string name="export_from">From</string>
+    <string name="export_to">To</string>
+    <string name="export_format">Export Format</string>
+    <string name="export_excel">Excel (.xlsx)</string>
+    <string name="export_csv">CSV (.csv)</string>
+    <string name="export_start">Start Export</string>
+    <string name="export_success">Export completed successfully!</string>
+    <string name="export_error">Export failed</string>
+    <string name="export_progress">Exporting...</string>
+    <string name="export_file_saved">File saved to Downloads</string>
+    
+    <!-- Profile Screen -->
+    <string name="profile_title">Personal Profile</string>
+    <string name="profile_edit">Edit</string>
+    <string name="profile_save">Save</string>
+    <string name="profile_member_since">Member since</string>
+    <string name="profile_change_avatar">Change Avatar</string>
+    <string name="profile_personal_info">Personal Information</string>
+    <string name="profile_full_name">Full Name</string>
+    <string name="profile_email">Email</string>
+    <string name="profile_phone">Phone Number</string>
+    <string name="profile_financial_summary">Financial Overview</string>
+    <string name="profile_monthly_budget">Monthly Budget</string>
+    <string name="profile_total_income">Total Income</string>
+    <string name="profile_total_expenses">Total Expenses</string>
+    <string name="profile_balance">Balance</string>
+    <string name="profile_account_settings">Account Settings</string>
+    <string name="profile_change_password">Change Password</string>
+    <string name="profile_security_settings">Security Settings</string>
+    <string name="profile_delete_account">Delete Account</string>
+    <string name="profile_avatar_dialog_title">Change Avatar</string>
+    <string name="profile_avatar_dialog_message">Choose how to change your avatar</string>
+    <string name="profile_avatar_take_photo">Take Photo</string>
+    <string name="profile_avatar_choose_gallery">Choose from Gallery</string>
+    <string name="profile_change_password_title">Change Password</string>
+    <string name="profile_current_password">Current Password</string>
+    <string name="profile_new_password">New Password</string>
+    <string name="profile_confirm_password">Confirm New Password</string>
+    <string name="profile_password_change_success">Password changed successfully!</string>
+    <string name="profile_delete_account_title">Delete Account</string>
+    <string name="profile_delete_account_message">Are you sure you want to delete your account? This action cannot be undone.</string>
+    <string name="profile_delete_account_password">Enter password to confirm</string>
+    <string name="profile_delete_account_success">Account deleted successfully</string>
+    <string name="profile_update_success">Information updated successfully!</string>
+    <string name="profile_update_error">An error occurred while updating information</string>
+    
+</resources>

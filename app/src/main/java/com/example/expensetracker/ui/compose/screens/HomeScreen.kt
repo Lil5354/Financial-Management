@@ -9,17 +9,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.expensetracker.R
+import com.example.expensetracker.ui.viewmodel.ExpenseViewModel
+import com.example.expensetracker.ui.viewmodel.ExpenseState
+import com.example.expensetracker.ui.viewmodel.ProfileViewModel
+import com.example.expensetracker.data.entity.Expense
+import java.text.NumberFormat
+import java.util.*
+import java.text.SimpleDateFormat
 
 /**
  * Màn hình chính với giao diện đẹp và hiện đại
@@ -32,8 +41,44 @@ fun HomeScreen(
     onNavigateToReports: () -> Unit,
     onNavigateToSettings: () -> Unit,
     isDarkTheme: Boolean = true,
-    onToggleTheme: () -> Unit = {}
+    onToggleTheme: () -> Unit = {},
+    expenseViewModel: ExpenseViewModel = hiltViewModel(),
+    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
+    // Collect data from ViewModel
+    val expenseState by expenseViewModel.expenseState.collectAsState()
+    val expenses by expenseViewModel.expenses.collectAsState()
+    val isLoading by expenseViewModel.isLoading.collectAsState()
+    val errorMessage by expenseViewModel.errorMessage.collectAsState()
+    
+    // Get user profile for greeting
+    val profile by profileViewModel.profile.collectAsState()
+    
+    // Load expenses and profile when screen is first composed
+    LaunchedEffect(Unit) {
+        expenseViewModel.loadExpenses()
+        profileViewModel.loadProfile()
+    }
+    
+    // Calculate statistics from real data
+    val totalBalance = remember(expenses) {
+        expenseViewModel.getBalance()
+    }
+    
+    val totalIncome = remember(expenses) {
+        expenseViewModel.getTotalIncome()
+    }
+    
+    val totalExpenses = remember(expenses) {
+        expenseViewModel.getTotalExpenses()
+    }
+    
+    val recentExpenses = remember(expenses) {
+        expenses.take(3)
+    }
+    
+    // Calculate monthly change (placeholder for now)
+    val monthlyChange = "+12.5%"
     val backgroundColor = if (isDarkTheme) Color(0xFF0F0F0F) else Color(0xFFFAFAFA)
     val cardColor = if (isDarkTheme) Color(0xFF1F2937) else Color.White
     val textColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
@@ -70,14 +115,14 @@ fun HomeScreen(
                     
             Column {
                 Text(
-                            text = "Chào Độ! 👋",
+                            text = "${stringResource(R.string.home_greeting)} ${profile?.name?.split(" ")?.firstOrNull()?.let { it.take(1).uppercase() + it.drop(1) } ?: ""} 👋",
                             style = MaterialTheme.typography.headlineLarge,
                             color = textColor,
                     fontWeight = FontWeight.Bold
                 )
                         Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                            text = "Tổng quan tài chính của bạn",
+                            text = stringResource(R.string.home_financial_overview),
                             style = MaterialTheme.typography.bodyMedium,
                             color = mutedTextColor
                         )
@@ -122,13 +167,13 @@ fun HomeScreen(
                     ) {
                         Column {
                     Text(
-                                text = "Tổng tài sản",
+                                text = stringResource(R.string.home_total_assets),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = mutedTextColor
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                                text = "3,800,000đ",
+                                text = formatCurrency(totalBalance),
                         style = MaterialTheme.typography.headlineLarge,
                                 color = textColor,
                         fontWeight = FontWeight.Bold
@@ -151,7 +196,7 @@ fun HomeScreen(
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
-                                    text = " so với tháng trước",
+                                    text = " ${stringResource(R.string.home_compared_to_last_month)}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = mutedTextColor
                                 )
@@ -185,8 +230,8 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 CryptoStatCard(
-                    title = "Thu nhập",
-                    amount = "5,000,000đ",
+                    title = stringResource(R.string.home_income),
+                    amount = formatCurrency(totalIncome),
                     change = "+8.2%",
                     icon = Icons.Default.TrendingUp,
                     color = Color(0xFF10B981),
@@ -196,8 +241,8 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f)
                 )
                 CryptoStatCard(
-                    title = "Chi tiêu",
-                    amount = "1,200,000đ",
+                    title = stringResource(R.string.home_expense),
+                    amount = formatCurrency(totalExpenses),
                     change = "-2.1%",
                     icon = Icons.Default.TrendingDown,
                     color = Color(0xFFEF4444),
@@ -213,7 +258,7 @@ fun HomeScreen(
         item {
             Column {
                 Text(
-                    text = "Trợ lý AI",
+                    text = stringResource(R.string.home_ai_assistant),
                     style = MaterialTheme.typography.titleLarge,
                     color = textColor,
                     fontWeight = FontWeight.Bold
@@ -255,14 +300,14 @@ fun HomeScreen(
                         
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Phân tích AI",
+                                text = stringResource(R.string.home_ai_analysis),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = textColor,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Phân tích chi tiêu thông minh với AI",
+                                text = stringResource(R.string.home_ai_analysis_desc),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = mutedTextColor
                             )
@@ -283,7 +328,7 @@ fun HomeScreen(
         item {
             Column {
                 Text(
-                    text = "Thông tin nhanh",
+                    text = stringResource(R.string.home_quick_info),
                     style = MaterialTheme.typography.titleLarge,
                     color = textColor,
                     fontWeight = FontWeight.Bold
@@ -314,12 +359,12 @@ fun HomeScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Hôm nay",
+                                    text = stringResource(R.string.home_today),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = mutedTextColor
                                 )
                                 Text(
-                                    text = "255,000đ",
+                                    text = formatCurrency(getTodayExpenses(expenses)),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = textColor,
                                     fontWeight = FontWeight.Bold
@@ -348,12 +393,12 @@ fun HomeScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Tuần này",
+                                    text = stringResource(R.string.home_this_week),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = mutedTextColor
                                 )
                                 Text(
-                                    text = "1,200,000đ",
+                                    text = formatCurrency(getWeekExpenses(expenses)),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = textColor,
                                     fontWeight = FontWeight.Bold
@@ -374,7 +419,7 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Giao dịch gần đây",
+                        text = stringResource(R.string.home_recent_transactions),
                         style = MaterialTheme.typography.titleLarge,
                         color = textColor,
                         fontWeight = FontWeight.Bold
@@ -383,24 +428,69 @@ fun HomeScreen(
                         onClick = onNavigateToExpenses,
                         colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF10B981))
                     ) {
-                        Text("Xem tất cả")
+                        Text(stringResource(R.string.home_view_all))
                     }
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // Crypto-style transaction list
-                repeat(3) { index ->
-                    CryptoTransactionItem(
-                        title = if (index == 0) "Cà phê" else if (index == 1) "Xăng xe" else "Ăn trưa",
-                        amount = if (index == 0) "25,000" else if (index == 1) "150,000" else "80,000",
-                        isExpense = true,
-                        cardColor = cardColor,
-                        textColor = textColor,
-                        mutedTextColor = mutedTextColor,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    if (index < 2) Spacer(modifier = Modifier.height(12.dp))
+                // Real transaction list
+                if (isLoading) {
+                    // Show loading for recent transactions
+                    repeat(3) {
+                        ShimmerTransactionItem(
+                            cardColor = cardColor,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        if (it < 2) Spacer(modifier = Modifier.height(12.dp))
+                    }
+                } else if (recentExpenses.isEmpty()) {
+                    // Show empty state
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = cardColor),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Receipt,
+                                contentDescription = null,
+                                tint = mutedTextColor,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = stringResource(R.string.home_no_transactions),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = textColor,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = stringResource(R.string.home_no_transactions_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = mutedTextColor
+                            )
+                        }
+                    }
+                } else {
+                    // Show real transactions
+                    recentExpenses.forEachIndexed { index, expense ->
+                        CryptoTransactionItem(
+                            title = expense.title,
+                            amount = expense.amount.toString(),
+                            isExpense = expense.isExpense,
+                            date = formatDate(expense.date),
+                            cardColor = cardColor,
+                            textColor = textColor,
+                            mutedTextColor = mutedTextColor,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        if (index < recentExpenses.size - 1) Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
             }
         }
@@ -528,6 +618,7 @@ fun CryptoTransactionItem(
     title: String,
     amount: String,
     isExpense: Boolean,
+    date: String = "Hôm nay",
     cardColor: Color,
     textColor: Color,
     mutedTextColor: Color,
@@ -574,14 +665,14 @@ fun CryptoTransactionItem(
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "Hôm nay",
+                        text = date,
                         style = MaterialTheme.typography.bodySmall,
                         color = mutedTextColor
                     )
                 }
             }
             Text(
-                text = "${if (isExpense) "-" else "+"}${amount}đ",
+                text = "${if (isExpense) "-" else "+"}${formatCurrency(amount.toLongOrNull() ?: 0L)}",
                 style = MaterialTheme.typography.titleMedium,
                 color = if (isExpense) Color(0xFFEF4444) else Color(0xFF10B981),
                 fontWeight = FontWeight.Bold
@@ -633,10 +724,124 @@ fun CryptoActionCardPreview() {
 fun CryptoTransactionItemPreview() {
     CryptoTransactionItem(
         title = "Cà phê",
-        amount = "25,000",
+        amount = "25000",
         isExpense = true,
+        date = "Hôm nay",
         cardColor = Color(0xFF1F2937),
         textColor = Color.White,
         mutedTextColor = Color(0xFF9CA3AF)
     )
+}
+
+// Shimmer Loading Component
+@Composable
+fun ShimmerTransactionItem(
+    cardColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = cardColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(
+                            color = Color(0xFF374151),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Box(
+                        modifier = Modifier
+                            .width(100.dp)
+                            .height(16.dp)
+                            .background(
+                                color = Color(0xFF374151),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .width(60.dp)
+                            .height(12.dp)
+                            .background(
+                                color = Color(0xFF374151),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                    )
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .width(80.dp)
+                    .height(16.dp)
+                    .background(
+                        color = Color(0xFF374151),
+                        shape = RoundedCornerShape(4.dp)
+                    )
+            )
+        }
+    }
+}
+
+// Utility Functions
+fun formatCurrency(amount: Long): String {
+    val formatter = NumberFormat.getNumberInstance(Locale("vi", "VN"))
+    return "${formatter.format(amount)}đ"
+}
+
+@Composable
+fun formatDate(date: Date): String {
+    val formatter = SimpleDateFormat("dd/MM", Locale.getDefault())
+    val today = Calendar.getInstance()
+    val expenseDate = Calendar.getInstance().apply { time = date }
+    
+    return when {
+        today.get(Calendar.DAY_OF_YEAR) == expenseDate.get(Calendar.DAY_OF_YEAR) &&
+        today.get(Calendar.YEAR) == expenseDate.get(Calendar.YEAR) -> 
+            stringResource(R.string.home_today)
+        
+        today.get(Calendar.DAY_OF_YEAR) - 1 == expenseDate.get(Calendar.DAY_OF_YEAR) &&
+        today.get(Calendar.YEAR) == expenseDate.get(Calendar.YEAR) -> 
+            stringResource(R.string.home_yesterday)
+        
+        else -> formatter.format(date)
+    }
+}
+
+fun getTodayExpenses(expenses: List<Expense>): Long {
+    val today = Calendar.getInstance()
+    return expenses.filter { expense ->
+        val expenseDate = Calendar.getInstance().apply { time = expense.date }
+        today.get(Calendar.DAY_OF_YEAR) == expenseDate.get(Calendar.DAY_OF_YEAR) &&
+        today.get(Calendar.YEAR) == expenseDate.get(Calendar.YEAR) &&
+        expense.isExpense
+    }.sumOf { it.amount }
+}
+
+fun getWeekExpenses(expenses: List<Expense>): Long {
+    val calendar = Calendar.getInstance()
+    val currentWeek = calendar.get(Calendar.WEEK_OF_YEAR)
+    val currentYear = calendar.get(Calendar.YEAR)
+    
+    return expenses.filter { expense ->
+        calendar.time = expense.date
+        val expenseWeek = calendar.get(Calendar.WEEK_OF_YEAR)
+        val expenseYear = calendar.get(Calendar.YEAR)
+        
+        currentWeek == expenseWeek && currentYear == expenseYear && expense.isExpense
+    }.sumOf { it.amount }
 }

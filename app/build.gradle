@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.expensetracker"
-        minSdk 24
+        minSdk 26
         targetSdk 36
         versionCode 1
         versionName "1.0"
@@ -163,6 +163,10 @@ dependencies {
     // Permissions
     implementation 'com.guolindev.permissionx:permissionx:1.7.1'
     implementation 'com.google.accompanist:accompanist-permissions:0.32.0'
+    
+    // Excel Export (Apache POI)
+    implementation 'org.apache.poi:poi:5.2.4'
+    implementation 'org.apache.poi:poi-ooxml:5.2.4'
     
     // Testing
     testImplementation 'junit:junit:4.13.2'

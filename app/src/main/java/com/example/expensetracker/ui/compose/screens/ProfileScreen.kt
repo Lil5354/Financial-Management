@@ -1,6 +1,7 @@
 package com.example.expensetracker.ui.compose.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -19,6 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.expensetracker.ui.viewmodel.ProfileViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -40,34 +43,52 @@ data class UserProfile(
 @Composable
 fun ProfileScreen(
     onNavigateBack: () -> Unit,
-    isDarkTheme: Boolean = true
+    isDarkTheme: Boolean = true,
+    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val backgroundColor = if (isDarkTheme) Color(0xFF0F0F0F) else Color(0xFFFAFAFA)
     val cardColor = if (isDarkTheme) Color(0xFF1F2937) else Color.White
     val textColor = if (isDarkTheme) Color.White else Color(0xFF1A1A1A)
     val mutedTextColor = if (isDarkTheme) Color(0xFF9CA3AF) else Color(0xFF6B7280)
     
-    // Sample user profile
-    val userProfile = remember {
-        UserProfile(
-            id = "1",
-            name = "Nguyễn Văn Độ",
-            email = "nguyenvando@email.com",
-            phone = "0123456789",
-            joinDate = Date(),
-            totalExpenses = 3380000,
-            totalIncome = 5200000,
-            budget = 4000000
-        )
-    }
+    // Get profile from ViewModel
+    val profile by profileViewModel.profile.collectAsState()
+    val isLoading by profileViewModel.isLoading.collectAsState()
+    val errorMessage by profileViewModel.errorMessage.collectAsState()
+    val successMessage by profileViewModel.successMessage.collectAsState()
     
     // Form state
-    var name by remember { mutableStateOf(userProfile.name) }
-    var email by remember { mutableStateOf(userProfile.email) }
-    var phone by remember { mutableStateOf(userProfile.phone) }
-    var budget by remember { mutableStateOf(userProfile.budget.toString()) }
+    var name by remember { mutableStateOf(profile?.name ?: "") }
+    var email by remember { mutableStateOf(profile?.email ?: "") }
+    var phone by remember { mutableStateOf(profile?.phone ?: "") }
+    var budget by remember { mutableStateOf((profile?.budget ?: 0L).toString()) }
     var isEditing by remember { mutableStateOf(false) }
     var showAvatarPicker by remember { mutableStateOf(false) }
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
+    
+    // Load profile on first composition
+    LaunchedEffect(Unit) {
+        profileViewModel.loadProfile()
+    }
+    
+    // Update form fields when profile changes
+    LaunchedEffect(profile) {
+        profile?.let {
+            name = it.name
+            email = it.email
+            phone = it.phone
+            budget = it.budget.toString()
+        }
+    }
+    
+    // Handle success/error messages
+    LaunchedEffect(successMessage) {
+        if (successMessage != null) {
+            // Close editing mode on success
+            isEditing = false
+        }
+    }
     
     Column(
         modifier = Modifier
@@ -114,8 +135,8 @@ fun ProfileScreen(
                     IconButton(
                         onClick = { 
                             if (isEditing) {
-                                // TODO: Save profile
-                                isEditing = false
+                                // Save profile
+                                profileViewModel.updateProfile(name, email, phone, budget)
                             } else {
                                 isEditing = true
                             }
@@ -134,10 +155,11 @@ fun ProfileScreen(
         }
         
         // Profile Content
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
+        profile?.let { currentProfile ->
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
             // Avatar Section
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -157,7 +179,7 @@ fun ProfileScreen(
                             .background(Color(0xFF10B981).copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (userProfile.avatar != null) {
+                        if (currentProfile.avatar != null) {
                             // TODO: Load avatar image
                             Icon(
                                 imageVector = Icons.Default.Person,
@@ -178,14 +200,14 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     Text(
-                        text = userProfile.name,
+                        text = currentProfile.name,
                         style = MaterialTheme.typography.headlineMedium,
                         color = textColor,
                         fontWeight = FontWeight.Bold
                     )
                     
                     Text(
-                        text = "Thành viên từ ${SimpleDateFormat("MM/yyyy", Locale.getDefault()).format(userProfile.joinDate)}",
+                        text = "Thành viên từ ${SimpleDateFormat("MM/yyyy", Locale.getDefault()).format(currentProfile.joinDate)}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = mutedTextColor
                     )
@@ -381,7 +403,7 @@ fun ProfileScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "${formatAmountProfile(userProfile.totalIncome)}đ",
+                                text = "${formatAmountProfile(currentProfile.totalIncome)}đ",
                                 style = MaterialTheme.typography.titleLarge,
                                 color = Color(0xFF10B981),
                                 fontWeight = FontWeight.Bold
@@ -398,7 +420,7 @@ fun ProfileScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "${formatAmountProfile(userProfile.totalExpenses)}đ",
+                                text = "${formatAmountProfile(currentProfile.totalExpenses)}đ",
                                 style = MaterialTheme.typography.titleLarge,
                                 color = Color(0xFFEF4444),
                                 fontWeight = FontWeight.Bold
@@ -415,7 +437,7 @@ fun ProfileScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "${formatAmountProfile(userProfile.totalIncome - userProfile.totalExpenses)}đ",
+                                text = "${formatAmountProfile(currentProfile.totalIncome - currentProfile.totalExpenses)}đ",
                                 style = MaterialTheme.typography.titleLarge,
                                 color = Color(0xFF3B82F6),
                                 fontWeight = FontWeight.Bold
@@ -453,6 +475,7 @@ fun ProfileScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clickable { showChangePasswordDialog = true }
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -515,6 +538,7 @@ fun ProfileScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clickable { showDeleteAccountDialog = true }
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -544,6 +568,16 @@ fun ProfileScreen(
             
             Spacer(modifier = Modifier.height(40.dp))
         }
+    } ?: Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Text("Không có thông tin profile")
+        }
+    }
     }
     
     // Avatar Picker Dialog
@@ -586,11 +620,194 @@ fun ProfileScreen(
             containerColor = cardColor
         )
     }
+    
+    // Change Password Dialog
+    if (showChangePasswordDialog) {
+        ChangePasswordDialog(
+            onDismiss = { showChangePasswordDialog = false },
+            onConfirm = { currentPassword, newPassword, confirmPassword ->
+                profileViewModel.updatePassword(currentPassword, newPassword, confirmPassword)
+                showChangePasswordDialog = false
+            },
+            isLoading = isLoading,
+            cardColor = cardColor,
+            textColor = textColor,
+            mutedTextColor = mutedTextColor
+        )
+    }
+    
+    // Delete Account Dialog
+    if (showDeleteAccountDialog) {
+        DeleteAccountDialog(
+            onDismiss = { showDeleteAccountDialog = false },
+            onConfirm = { password ->
+                profileViewModel.deleteAccount(password)
+                showDeleteAccountDialog = false
+            },
+            isLoading = isLoading,
+            cardColor = cardColor,
+            textColor = textColor,
+            mutedTextColor = mutedTextColor
+        )
+    }
+    
+    // Show error snackbar
+    errorMessage?.let { error ->
+        LaunchedEffect(error) {
+            // TODO: Show snackbar
+            kotlinx.coroutines.delay(3000)
+            profileViewModel.clearError()
+        }
+    }
+    
+    // Show success snackbar
+    successMessage?.let { success ->
+        LaunchedEffect(success) {
+            // TODO: Show snackbar
+            kotlinx.coroutines.delay(3000)
+            profileViewModel.clearSuccess()
+        }
+    }
 }
 
 // Helper function
-private fun formatAmountProfile(amount: Long): String {
+fun formatAmountProfile(amount: Long): String {
     return String.format("%,d", amount)
+}
+
+/**
+ * Dialog để đổi mật khẩu
+ */
+@Composable
+fun ChangePasswordDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String, String, String) -> Unit,
+    isLoading: Boolean,
+    cardColor: Color,
+    textColor: Color,
+    mutedTextColor: Color
+) {
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Đổi mật khẩu",
+                color = textColor,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = currentPassword,
+                    onValueChange = { currentPassword = it },
+                    label = { Text("Mật khẩu hiện tại") },
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    enabled = !isLoading,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = newPassword,
+                    onValueChange = { newPassword = it },
+                    label = { Text("Mật khẩu mới") },
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    enabled = !isLoading,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Xác nhận mật khẩu mới") },
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    enabled = !isLoading,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(currentPassword, newPassword, confirmPassword) },
+                enabled = !isLoading && currentPassword.isNotBlank() && newPassword.isNotBlank() && confirmPassword.isNotBlank()
+            ) {
+                Text("Đổi mật khẩu", color = Color(0xFF10B981))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isLoading
+            ) {
+                Text("Hủy", color = mutedTextColor)
+            }
+        },
+        containerColor = cardColor
+    )
+}
+
+/**
+ * Dialog để xóa tài khoản
+ */
+@Composable
+fun DeleteAccountDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+    isLoading: Boolean,
+    cardColor: Color,
+    textColor: Color,
+    mutedTextColor: Color
+) {
+    var password by remember { mutableStateOf("") }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Xóa tài khoản",
+                color = Color(0xFFEF4444),
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.",
+                    color = textColor
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Nhập mật khẩu để xác nhận") },
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                    enabled = !isLoading,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(password) },
+                enabled = !isLoading && password.isNotBlank()
+            ) {
+                Text("Xóa tài khoản", color = Color(0xFFEF4444))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isLoading
+            ) {
+                Text("Hủy", color = mutedTextColor)
+            }
+        },
+        containerColor = cardColor
+    )
 }
 
 // PREVIEW - Xem giao diện ngay lập tức!

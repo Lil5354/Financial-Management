@@ -1,5 +1,6 @@
 package com.example.expensetracker.ui.compose.screens
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,11 +13,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlin.math.max
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -566,6 +574,36 @@ fun MonthlyTrendsSection(
                 Column(
                     modifier = Modifier.padding(20.dp)
                 ) {
+                    // Chart
+                    MonthlyTrendsChart(
+                        monthlyTrends = monthlyTrends,
+                        textColor = textColor,
+                        mutedTextColor = mutedTextColor,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(250.dp)
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    
+                    // Legend
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        ChartLegend(
+                            label = "Thu nhập",
+                            color = Color(0xFF10B981),
+                            textColor = textColor
+                        )
+                        ChartLegend(
+                            label = "Chi tiêu",
+                            color = Color(0xFFEF4444),
+                            textColor = textColor
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
+                    
+                    // Trend items
                     monthlyTrends.forEach { trend ->
                         MonthlyTrendItem(
                             trend = trend,
@@ -809,6 +847,164 @@ fun SmartInsightItem(
 }
 
 // Helper functions
+@Composable
+fun MonthlyTrendsChart(
+    monthlyTrends: List<ReportsViewModel.MonthlyTrend>,
+    textColor: Color,
+    mutedTextColor: Color,
+    modifier: Modifier = Modifier
+) {
+    if (monthlyTrends.isEmpty()) {
+        Box(
+            modifier = modifier,
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Không có dữ liệu",
+                color = mutedTextColor
+            )
+        }
+        return
+    }
+    
+    val maxValue = remember(monthlyTrends) {
+        max(
+            monthlyTrends.maxOfOrNull { it.income } ?: 0L,
+            monthlyTrends.maxOfOrNull { it.expense } ?: 0L
+        ).toFloat().coerceAtLeast(1000f)
+    }
+    
+    val padding = 40.dp
+    val chartHeight = 180.dp
+    
+    Column(modifier = modifier) {
+        Canvas(modifier = Modifier
+            .fillMaxWidth()
+            .height(chartHeight)) {
+            val canvasWidth = size.width
+            val canvasHeight = size.height
+            val chartAreaHeight = canvasHeight - (padding.toPx() * 2)
+            val chartAreaTop = padding.toPx()
+            val chartAreaBottom = chartAreaTop + chartAreaHeight
+            val chartAreaWidth = canvasWidth - (padding.toPx() * 2)
+            
+            // Draw grid lines
+            val gridLineColor = mutedTextColor.copy(alpha = 0.2f)
+            val gridLines = 5
+            for (i in 0..gridLines) {
+                val y = chartAreaTop + (chartAreaHeight / gridLines) * i
+                drawLine(
+                    color = gridLineColor,
+                    start = Offset(padding.toPx(), y),
+                    end = Offset(canvasWidth - padding.toPx(), y),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+            
+            // Draw income line
+            val incomeColor = Color(0xFF10B981)
+            val incomePath = androidx.compose.ui.graphics.Path().apply {
+                monthlyTrends.forEachIndexed { index, trend ->
+                    val x = padding.toPx() + (chartAreaWidth / (monthlyTrends.size - 1).coerceAtLeast(1)) * index
+                    val y = chartAreaBottom - ((trend.income.toFloat() / maxValue) * chartAreaHeight)
+                    
+                    if (index == 0) {
+                        moveTo(x, y)
+                    } else {
+                        lineTo(x, y)
+                    }
+                }
+            }
+            drawPath(
+                path = incomePath,
+                color = incomeColor,
+                style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+            )
+            
+            // Draw expense line
+            val expenseColor = Color(0xFFEF4444)
+            val expensePath = androidx.compose.ui.graphics.Path().apply {
+                monthlyTrends.forEachIndexed { index, trend ->
+                    val x = padding.toPx() + (chartAreaWidth / (monthlyTrends.size - 1).coerceAtLeast(1)) * index
+                    val y = chartAreaBottom - ((trend.expense.toFloat() / maxValue) * chartAreaHeight)
+                    
+                    if (index == 0) {
+                        moveTo(x, y)
+                    } else {
+                        lineTo(x, y)
+                    }
+                }
+            }
+            drawPath(
+                path = expensePath,
+                color = expenseColor,
+                style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+            )
+            
+            // Draw points
+            monthlyTrends.forEachIndexed { index, trend ->
+                val x = padding.toPx() + (chartAreaWidth / (monthlyTrends.size - 1).coerceAtLeast(1)) * index
+                
+                // Income point
+                val incomeY = chartAreaBottom - ((trend.income.toFloat() / maxValue) * chartAreaHeight)
+                drawCircle(
+                    color = incomeColor,
+                    radius = 5.dp.toPx(),
+                    center = Offset(x, incomeY)
+                )
+                
+                // Expense point
+                val expenseY = chartAreaBottom - ((trend.expense.toFloat() / maxValue) * chartAreaHeight)
+                drawCircle(
+                    color = expenseColor,
+                    radius = 5.dp.toPx(),
+                    center = Offset(x, expenseY)
+                )
+            }
+        }
+        
+        // Month labels
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            monthlyTrends.forEach { trend ->
+                Text(
+                    text = trend.month.take(3),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = mutedTextColor,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ChartLegend(
+    label: String,
+    color: Color,
+    textColor: Color
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(12.dp)
+                .background(color, RoundedCornerShape(2.dp))
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = textColor
+        )
+    }
+}
+
 private fun formatAmountReports(amount: Long): String {
     return String.format("%,d", amount)
 }

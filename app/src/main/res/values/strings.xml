@@ -33,6 +33,8 @@
     <string name="cancel">Hủy</string>
     <string name="delete">Xóa</string>
     <string name="edit">Sửa</string>
+    <string name="back">Quay lại</string>
+    <string name="ok">OK</string>
     
     <!-- Categories -->
     <string name="category_food">Ăn uống</string>
@@ -55,7 +57,6 @@
     
     <!-- Settings -->
     <string name="settings_title">Cài đặt</string>
-    <string name="settings_notifications">Thông báo</string>
     <string name="settings_backup">Sao lưu dữ liệu</string>
     <string name="settings_sync">Đồng bộ Firebase</string>
     <string name="settings_categories">Quản lý danh mục</string>
@@ -104,6 +105,7 @@
     <string name="action_remove_photo">Xóa ảnh</string>
     <string name="action_retry">Thử lại</string>
     <string name="action_refresh">Làm mới</string>
+    <string name="action_cancel">Hủy</string>
     <string name="action_share">Chia sẻ</string>
     <string name="action_export">Xuất dữ liệu</string>
     
@@ -118,5 +120,121 @@
     <string name="firebase_sync_error">Lỗi đồng bộ</string>
     <string name="firebase_backup_success">Sao lưu thành công</string>
     <string name="firebase_restore_success">Khôi phục thành công</string>
+    
+    <!-- Home Screen Specific -->
+    <string name="home_greeting">Chào!</string>
+    <string name="home_financial_overview">Tổng quan tài chính của bạn</string>
+    <string name="home_total_assets">Tổng tài sản</string>
+    <string name="home_income">Thu nhập</string>
+    <string name="home_expense">Chi tiêu</string>
+    <string name="home_ai_assistant">Trợ lý AI</string>
+    <string name="home_ai_analysis">Phân tích AI</string>
+    <string name="home_ai_analysis_desc">Phân tích chi tiêu thông minh với AI</string>
+    <string name="home_quick_info">Thông tin nhanh</string>
+    <string name="home_today">Hôm nay</string>
+    <string name="home_this_week">Tuần này</string>
+    <string name="home_recent_transactions">Giao dịch gần đây</string>
+    <string name="home_no_transactions">Chưa có giao dịch nào</string>
+    <string name="home_no_transactions_desc">Hãy thêm chi tiêu đầu tiên của bạn</string>
+    <string name="home_yesterday">Hôm qua</string>
+    <string name="home_compared_to_last_month">so với tháng trước</string>
+    
+    <!-- Settings Screen Specific -->
+    <string name="settings_general">Cài đặt chung</string>
+    <string name="settings_account">Tài khoản</string>
+    <string name="settings_data">Dữ liệu</string>
+    <string name="settings_support">Hỗ trợ</string>
+    <string name="settings_about_app">Về ứng dụng</string>
+    <string name="settings_theme">Giao diện</string>
+    <string name="settings_theme_light">Sáng</string>
+    <string name="settings_theme_dark">Tối</string>
+    <string name="settings_language">Ngôn ngữ</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
+    <string name="settings_currency">Đơn vị tiền tệ</string>
+    <string name="settings_currency_vnd">VND (₫)</string>
+    <string name="settings_currency_usd">USD ($)</string>
+    <string name="settings_profile">Hồ sơ cá nhân</string>
+    <string name="settings_profile_desc">Chỉnh sửa thông tin</string>
+    <string name="settings_security">Bảo mật</string>
+    <string name="settings_security_desc">Mật khẩu, xác thực</string>
+    <string name="settings_notifications">Thông báo</string>
+    <string name="settings_notifications_desc">Cài đặt thông báo</string>
+    <string name="settings_logout">Đăng xuất</string>
+    <string name="settings_logout_desc">Đăng xuất khỏi tài khoản</string>
+    <string name="settings_logout_confirm">Bạn có chắc chắn muốn đăng xuất?</string>
+    <string name="settings_backup_desc">Backup toàn bộ dữ liệu</string>
+    <string name="settings_restore">Khôi phục dữ liệu</string>
+    <string name="settings_restore_desc">Restore từ backup</string>
+    <string name="settings_export">Xuất dữ liệu</string>
+    <string name="settings_export_desc">Export ra file Excel/CSV</string>
+    <string name="settings_help">Trợ giúp &amp; Hỗ trợ</string>
+    <string name="settings_help_desc">FAQ, liên hệ</string>
+    <string name="settings_rate">Đánh giá ứng dụng</string>
+    <string name="settings_rate_desc">Rate trên Play Store</string>
+    <string name="settings_share_app">Chia sẻ ứng dụng</string>
+    <string name="settings_share_app_desc">Giới thiệu cho bạn bè</string>
+    <string name="settings_version">Phiên bản</string>
+    <string name="settings_version_number">v1.0.0</string>
+    <string name="settings_terms">Điều khoản sử dụng</string>
+    <string name="settings_privacy">Chính sách bảo mật</string>
+    <string name="settings_app_description">Quản lý chi tiêu thông minh</string>
+    
+    <!-- Language Selection -->
+    <string name="language_selection_title">Chọn ngôn ngữ</string>
+    <string name="language_selection_subtitle">Chọn ngôn ngữ ưa thích của bạn</string>
+    <string name="language_apply">Áp dụng</string>
+    <string name="language_restart_required">Cần khởi động lại ứng dụng</string>
+    <string name="language_restart_message">Ứng dụng sẽ khởi động lại để áp dụng ngôn ngữ mới</string>
+    
+    <!-- Export -->
+    <string name="export_title">Xuất dữ liệu</string>
+    <string name="export_subtitle">Chọn khoảng thời gian và định dạng</string>
+    <string name="export_date_range">Khoảng thời gian</string>
+    <string name="export_from">Từ</string>
+    <string name="export_to">Đến</string>
+    <string name="export_format">Định dạng xuất</string>
+    <string name="export_excel">Excel (.xlsx)</string>
+    <string name="export_csv">CSV (.csv)</string>
+    <string name="export_start">Bắt đầu xuất</string>
+    <string name="export_success">Xuất dữ liệu thành công!</string>
+    <string name="export_error">Xuất dữ liệu thất bại</string>
+    <string name="export_progress">Đang xuất...</string>
+    <string name="export_file_saved">File đã được lưu vào Downloads</string>
+    
+    <!-- Profile Screen -->
+    <string name="profile_title">Hồ sơ cá nhân</string>
+    <string name="profile_edit">Chỉnh sửa</string>
+    <string name="profile_save">Lưu</string>
+    <string name="profile_member_since">Thành viên từ</string>
+    <string name="profile_change_avatar">Đổi ảnh đại diện</string>
+    <string name="profile_personal_info">Thông tin cá nhân</string>
+    <string name="profile_full_name">Họ và tên</string>
+    <string name="profile_email">Email</string>
+    <string name="profile_phone">Số điện thoại</string>
+    <string name="profile_financial_summary">Tổng quan tài chính</string>
+    <string name="profile_monthly_budget">Ngân sách hàng tháng</string>
+    <string name="profile_total_income">Tổng thu nhập</string>
+    <string name="profile_total_expenses">Tổng chi tiêu</string>
+    <string name="profile_balance">Số dư</string>
+    <string name="profile_account_settings">Cài đặt tài khoản</string>
+    <string name="profile_change_password">Đổi mật khẩu</string>
+    <string name="profile_security_settings">Cài đặt bảo mật</string>
+    <string name="profile_delete_account">Xóa tài khoản</string>
+    <string name="profile_avatar_dialog_title">Đổi ảnh đại diện</string>
+    <string name="profile_avatar_dialog_message">Chọn cách thay đổi ảnh đại diện của bạn</string>
+    <string name="profile_avatar_take_photo">Chụp ảnh</string>
+    <string name="profile_avatar_choose_gallery">Chọn từ thư viện</string>
+    <string name="profile_change_password_title">Đổi mật khẩu</string>
+    <string name="profile_current_password">Mật khẩu hiện tại</string>
+    <string name="profile_new_password">Mật khẩu mới</string>
+    <string name="profile_confirm_password">Xác nhận mật khẩu mới</string>
+    <string name="profile_password_change_success">Đổi mật khẩu thành công!</string>
+    <string name="profile_delete_account_title">Xóa tài khoản</string>
+    <string name="profile_delete_account_message">Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.</string>
+    <string name="profile_delete_account_password">Nhập mật khẩu để xác nhận</string>
+    <string name="profile_delete_account_success">Tài khoản đã được xóa thành công</string>
+    <string name="profile_update_success">Cập nhật thông tin thành công!</string>
+    <string name="profile_update_error">Có lỗi xảy ra khi cập nhật thông tin</string>
     
 </resources>

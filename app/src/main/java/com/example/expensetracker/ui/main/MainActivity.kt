@@ -2,6 +2,8 @@ package com.example.expensetracker.ui.main
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,6 +21,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.os.ConfigurationCompat
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -26,6 +29,7 @@ import com.example.expensetracker.ui.compose.components.BottomNavigationBar
 import com.example.expensetracker.ui.compose.navigation.NoNoNavigation
 import com.example.expensetracker.ui.compose.theme.NoNoTheme
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 
 /**
  * MainActivity sử dụng Jetpack Compose
@@ -33,6 +37,29 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    
+    override fun attachBaseContext(newBase: Context?) {
+        super.attachBaseContext(newBase?.let { updateLocale(it) } ?: newBase)
+    }
+    
+    private fun updateLocale(context: Context): Context {
+        val languagePrefs = context.getSharedPreferences("language_prefs", Context.MODE_PRIVATE)
+        val languageCode = languagePrefs.getString("selected_language", "vi") ?: "vi"
+        
+        val locale = Locale(languageCode)
+        Locale.setDefault(locale)
+        
+        val configuration = Configuration(context.resources.configuration)
+        configuration.setLocale(locale)
+        
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            context.createConfigurationContext(configuration)
+        } else {
+            @Suppress("DEPRECATION")
+            context.resources.updateConfiguration(configuration, context.resources.displayMetrics)
+            context
+        }
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

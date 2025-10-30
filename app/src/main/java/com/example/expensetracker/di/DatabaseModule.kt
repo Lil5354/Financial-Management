@@ -7,7 +7,10 @@ import com.example.expensetracker.data.database.ExpenseTrackerDatabase
 import com.example.expensetracker.data.repository.ChatRepository
 import com.example.expensetracker.data.repository.FirebaseRepository
 import com.example.expensetracker.data.repository.AuthRepository
+import com.example.expensetracker.data.repository.ProfileRepository
 import com.example.expensetracker.data.service.GeminiService
+import com.example.expensetracker.data.service.LanguageManager
+import com.example.expensetracker.data.service.ExcelExportService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
@@ -67,6 +70,15 @@ object FirebaseModule {
     fun provideAuthRepository(auth: FirebaseAuth): AuthRepository {
         return AuthRepository(auth)
     }
+    
+    @Provides
+    @Singleton
+    fun provideProfileRepository(
+        firestore: FirebaseFirestore,
+        auth: FirebaseAuth
+    ): ProfileRepository {
+        return ProfileRepository(firestore, auth)
+    }
 }
 
 @Module
@@ -77,6 +89,18 @@ object ServiceModule {
     @Singleton
     fun provideGeminiService(): GeminiService {
         return GeminiService()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideLanguageManager(@ApplicationContext context: Context): LanguageManager {
+        return LanguageManager(context)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideExcelExportService(@ApplicationContext context: Context): ExcelExportService {
+        return ExcelExportService(context)
     }
 }
 

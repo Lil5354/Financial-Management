@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,6 +36,9 @@ import com.example.expensetracker.ui.compose.screens.ResetPasswordScreen
 import com.example.expensetracker.ui.viewmodel.AuthViewModel
 import com.example.expensetracker.ui.viewmodel.AuthState
 import com.example.expensetracker.ui.viewmodel.ExpenseViewModel
+import com.example.expensetracker.ui.viewmodel.ProfileViewModel
+import com.example.expensetracker.data.service.LanguageManager
+import com.example.expensetracker.data.service.ExcelExportService
 
 /**
  * Navigation component cho ứng dụng
@@ -177,6 +181,8 @@ fun NoNoNavigation(
         composable("home") {
             when (authState) {
                 is AuthState.Success -> {
+                    val expenseViewModel: ExpenseViewModel = hiltViewModel()
+                    val profileViewModel: ProfileViewModel = hiltViewModel()
                     HomeScreen(
                         onNavigateToExpenses = {
                             navController.navigate("expenses")
@@ -188,7 +194,9 @@ fun NoNoNavigation(
                             navController.navigate("settings")
                         },
                         isDarkTheme = isDarkTheme,
-                        onToggleTheme = onToggleTheme
+                        onToggleTheme = onToggleTheme,
+                        expenseViewModel = expenseViewModel,
+                        profileViewModel = profileViewModel
                     )
                 }
                 else -> {
@@ -284,6 +292,10 @@ fun NoNoNavigation(
         composable("settings") {
             when (authState) {
                 is AuthState.Success -> {
+                    val context = LocalContext.current
+                    val languageManager = remember { LanguageManager(context) }
+                    val expenseViewModel: ExpenseViewModel = hiltViewModel()
+                    val excelExportService = remember { ExcelExportService(context) }
                     SettingsScreen(
                         onNavigateBack = {
                             navController.popBackStack()
@@ -291,8 +303,16 @@ fun NoNoNavigation(
                         onNavigateToProfile = {
                             navController.navigate("profile")
                         },
+                        onSignOut = {
+                            navController.navigate("signin") {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        },
                         isDarkTheme = isDarkTheme,
-                        onToggleTheme = onToggleTheme
+                        onToggleTheme = onToggleTheme,
+                        languageManager = languageManager,
+                        expenseViewModel = expenseViewModel,
+                        excelExportService = excelExportService
                     )
                 }
                 else -> {
@@ -397,12 +417,25 @@ fun NoNoNavigation(
         }
         
         composable("profile") {
-            ProfileScreen(
-                onNavigateBack = {
-                    navController.popBackStack()
-                },
-                isDarkTheme = isDarkTheme
-            )
+            when (authState) {
+                is AuthState.Success -> {
+                    val profileViewModel: ProfileViewModel = hiltViewModel()
+                    ProfileScreen(
+                        onNavigateBack = {
+                            navController.popBackStack()
+                        },
+                        isDarkTheme = isDarkTheme,
+                        profileViewModel = profileViewModel
+                    )
+                }
+                else -> {
+                    LaunchedEffect(Unit) {
+                        navController.navigate("signin") {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                }
+            }
         }
     }
 }
